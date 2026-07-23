@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useResearch } from '../context/ResearchContext';
 
 const AnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState('Last 30 Days');
+  const { papers, chatSessions } = useResearch();
 
   return (
     <div>
@@ -30,8 +32,8 @@ const AnalyticsPage = () => {
             <span className="metric-label">Papers Uploaded</span>
             <div className="metric-icon">📄</div>
           </div>
-          <div className="metric-value">28</div>
-          <div className="metric-trend">↑ +40% vs last 30 days</div>
+          <div className="metric-value">{papers.length}</div>
+          <div className="metric-trend">{papers.length > 0 ? `+${papers.length} total` : '0 uploaded'}</div>
         </div>
 
         <div className="metric-card">
@@ -39,8 +41,8 @@ const AnalyticsPage = () => {
             <span className="metric-label">AI Conversations</span>
             <div className="metric-icon">💬</div>
           </div>
-          <div className="metric-value">46</div>
-          <div className="metric-trend">↑ +20% vs last 30 days</div>
+          <div className="metric-value">{chatSessions.length}</div>
+          <div className="metric-trend">{chatSessions.length > 0 ? `+${chatSessions.length} active` : '0 active'}</div>
         </div>
 
         <div className="metric-card">
@@ -48,8 +50,8 @@ const AnalyticsPage = () => {
             <span className="metric-label">Literature Reviews</span>
             <div className="metric-icon">📝</div>
           </div>
-          <div className="metric-value">8</div>
-          <div className="metric-trend">↑ +60% vs last 30 days</div>
+          <div className="metric-value">0</div>
+          <div className="metric-trend">0 generated</div>
         </div>
 
         <div className="metric-card">
@@ -57,8 +59,8 @@ const AnalyticsPage = () => {
             <span className="metric-label">Hours Saved</span>
             <div className="metric-icon">⏱️</div>
           </div>
-          <div className="metric-value">18.6</div>
-          <div className="metric-trend">↑ +25% vs last 30 days</div>
+          <div className="metric-value">{(papers.length * 1.5 + chatSessions.length * 0.5).toFixed(1)}</div>
+          <div className="metric-trend">0h saved</div>
         </div>
       </div>
 

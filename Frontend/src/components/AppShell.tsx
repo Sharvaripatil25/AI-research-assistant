@@ -10,8 +10,8 @@ type AppShellProps = {
 
 const navItems = [
   { label: 'Home', path: '/dashboard', icon: '🏠' },
-  { label: 'Library', path: '/library', icon: '📚' },
   { label: 'Upload Paper', path: '/upload', icon: '📤' },
+  { label: 'Library', path: '/library', icon: '📚' },
   { label: 'AI Chat', path: '/chat', icon: '💬' },
   { label: 'Compare Papers', path: '/compare', icon: '⚖️' },
   { label: 'Literature Review', path: '/review', icon: '📝' },

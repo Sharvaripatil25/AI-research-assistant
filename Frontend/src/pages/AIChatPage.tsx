@@ -11,7 +11,18 @@ const suggestedPrompts = [
 
 const AIChatPage = () => {
   const navigate = useNavigate();
-  const { chatMessages, sendMessage, startNewChat, papers } = useResearch();
+  const {
+    chatSessions,
+    activeSessionId,
+    activeSession,
+    chatMessages,
+    sendMessage,
+    startNewChat,
+    deleteChatMessage,
+    deleteChatSession,
+    selectSession,
+    papers
+  } = useResearch();
   const [input, setInput] = useState('');
 
   const handleSend = (textToSend?: string) => {
@@ -27,7 +38,60 @@ const AIChatPage = () => {
       <div className="chat-history-sidebar">
         <button className="new-chat-btn" onClick={startNewChat}>+ New Chat</button>
 
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 600 }}>SUGGESTED PROMPTS</div>
+        {chatSessions.length > 0 && (
+          <div style={{ marginTop: '1rem' }}>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.4rem' }}>
+              PAST CHATS ({chatSessions.length})
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', maxHeight: '200px', overflowY: 'auto' }}>
+              {chatSessions.map((session) => (
+                <div
+                  key={session.id}
+                  onClick={() => selectSession(session.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.45rem 0.65rem',
+                    borderRadius: '8px',
+                    background: session.id === activeSessionId ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255, 255, 255, 0.02)',
+                    border: session.id === activeSessionId ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid rgba(255, 255, 255, 0.05)',
+                    fontSize: '0.82rem',
+                    color: session.id === activeSessionId ? '#fff' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '0.4rem' }}>
+                    💬 {session.title}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteChatSession(session.id);
+                    }}
+                    title="Delete this chat"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#f87171',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      opacity: 0.7,
+                      padding: '2px 4px'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem', fontWeight: 600 }}>SUGGESTED PROMPTS</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.25rem' }}>
           {suggestedPrompts.map((prompt, idx) => (
             <div
@@ -52,12 +116,76 @@ const AIChatPage = () => {
 
       {/* Main Chat Area */}
       <div className="chat-main-area">
+        {/* Chat Area Header */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingBottom: '0.85rem',
+            marginBottom: '0.85rem',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>
+              {activeSession ? activeSession.title : 'New AI Research Chat'}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--accent-emerald)', marginTop: '2px' }}>
+              ● AI Assistant Active ({papers.length} Papers indexed)
+            </div>
+          </div>
+
+          {activeSessionId && chatMessages.length > 0 && (
+            <button
+              onClick={() => deleteChatSession(activeSessionId)}
+              title="Delete current chat"
+              style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#f87171',
+                borderRadius: '8px',
+                padding: '0.4rem 0.75rem',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              🗑️ Delete Chat
+            </button>
+          )}
+        </div>
+
         <div className="chat-messages">
           {chatMessages.length > 0 ? (
             chatMessages.map((msg) => (
-              <div key={msg.id} className={`chat-msg ${msg.sender}`}>
-                <div className="chat-bubble">
-                  <p>{msg.text}</p>
+              <div key={msg.id} className={`chat-msg ${msg.sender}`} style={{ position: 'relative' }}>
+                <div className="chat-bubble" style={{ position: 'relative' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <p style={{ margin: 0, flex: 1 }}>{msg.text}</p>
+                    <button
+                      onClick={() => deleteChatMessage(msg.id)}
+                      title="Delete message"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        opacity: 0.6,
+                        padding: '0 2px',
+                        transition: 'opacity 0.2s'
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                      onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
+                    >
+                      ✕
+                    </button>
+                  </div>
 
                   {msg.datasets && (
                     <ul style={{ margin: '0.75rem 0', paddingLeft: '1.2rem', color: 'var(--text-main)', fontSize: '0.88rem' }}>

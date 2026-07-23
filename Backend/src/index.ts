@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { registerUser, loginUser, authMiddleware } from './auth';
-import { initializeDatabase, getAllPapers, getPaperById, addPaper, deletePaperById, getChatHistory, addChatMessage } from './db';
+import { initializeDatabase, getAllPapers, getPaperById, addPaper, deletePaperById, clearAllPapersFromDb, getChatHistory, addChatMessage, deleteChatMessageById, deleteChatSession, clearAllChatHistory } from './db';
 
 dotenv.config();
 
@@ -118,6 +118,11 @@ app.post('/api/papers', async (req: Request, res: Response) => {
   res.status(201).json({ message: 'Paper uploaded successfully', paper });
 });
 
+app.delete('/api/papers', async (_req: Request, res: Response) => {
+  await clearAllPapersFromDb();
+  res.json({ message: 'All papers deleted successfully' });
+});
+
 app.delete('/api/papers/:id', async (req: Request, res: Response) => {
   const paperId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   await deletePaperById(paperId);
@@ -182,6 +187,23 @@ app.post('/api/chat', async (req: Request, res: Response) => {
   });
 
   res.status(201).json({ userMessage: userMsg, assistantMessage: assistantMsg });
+});
+
+app.delete('/api/chat', async (_req: Request, res: Response) => {
+  await clearAllChatHistory();
+  res.json({ message: 'Chat history cleared successfully' });
+});
+
+app.delete('/api/chat/session/:sessionId', async (req: Request, res: Response) => {
+  const sessionId = Array.isArray(req.params.sessionId) ? req.params.sessionId[0] : req.params.sessionId;
+  await deleteChatSession(sessionId);
+  res.json({ message: 'Chat session deleted successfully' });
+});
+
+app.delete('/api/chat/:id', async (req: Request, res: Response) => {
+  const messageId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  await deleteChatMessageById(messageId);
+  res.json({ message: 'Chat message deleted successfully' });
 });
 
 /* Literature Review API */
