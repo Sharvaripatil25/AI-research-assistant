@@ -12,7 +12,6 @@ import AIChatPage from './pages/AIChatPage';
 import ComparePage from './pages/ComparePage';
 import LiteratureReviewPage from './pages/LiteratureReviewPage';
 import CollectionsPage from './pages/CollectionsPage';
-import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 
 const App = () => {
@@ -41,7 +40,6 @@ const App = () => {
                     <Route path="compare" element={<ComparePage />} />
                     <Route path="review" element={<LiteratureReviewPage />} />
                     <Route path="collections" element={<CollectionsPage />} />
-                    <Route path="analytics" element={<AnalyticsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="*" element={<Navigate to="dashboard" replace />} />
                   </Routes>

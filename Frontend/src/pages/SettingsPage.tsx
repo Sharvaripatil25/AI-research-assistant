@@ -66,16 +66,6 @@ const SettingsPage = () => {
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem', fontWeight: 600 }}>
-                Subscription Tier
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span className="pro-badge" style={{ margin: 0 }}>{user?.plan || 'Pro Plan'}</span>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Unlimited research access</span>
-              </div>
-            </div>
-
             {message && (
               <div style={{ color: 'var(--accent-emerald)', fontSize: '0.88rem', fontWeight: 600 }}>
                 {message}

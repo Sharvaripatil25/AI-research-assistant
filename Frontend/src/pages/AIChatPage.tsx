@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
 
@@ -16,6 +16,7 @@ const AIChatPage = () => {
     activeSessionId,
     activeSession,
     chatMessages,
+    isTyping,
     sendMessage,
     startNewChat,
     deleteChatMessage,
@@ -24,6 +25,11 @@ const AIChatPage = () => {
     papers
   } = useResearch();
   const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isTyping]);
 
   const handleSend = (textToSend?: string) => {
     const messageText = textToSend || input;
@@ -162,50 +168,68 @@ const AIChatPage = () => {
 
         <div className="chat-messages">
           {chatMessages.length > 0 ? (
-            chatMessages.map((msg) => (
-              <div key={msg.id} className={`chat-msg ${msg.sender}`} style={{ position: 'relative' }}>
-                <div className="chat-bubble" style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <p style={{ margin: 0, flex: 1 }}>{msg.text}</p>
-                    <button
-                      onClick={() => deleteChatMessage(msg.id)}
-                      title="Delete message"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer',
-                        fontSize: '0.75rem',
-                        opacity: 0.6,
-                        padding: '0 2px',
-                        transition: 'opacity 0.2s'
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                      onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  {msg.datasets && (
-                    <ul style={{ margin: '0.75rem 0', paddingLeft: '1.2rem', color: 'var(--text-main)', fontSize: '0.88rem' }}>
-                      {msg.datasets.map((d, i) => (
-                        <li key={i} style={{ marginBottom: '0.3rem' }}>{d}</li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {msg.sources && (
-                    <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.3rem', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Sources:</span>
-                      {msg.sources.map((s, i) => (
-                        <span key={i} className="citation-chip" onClick={() => navigate('/library')}>{s}</span>
-                      ))}
+            <>
+              {chatMessages.map((msg) => (
+                <div key={msg.id} className={`chat-msg ${msg.sender}`} style={{ position: 'relative' }}>
+                  <div className="chat-bubble" style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <div style={{ margin: 0, flex: 1, whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+                        {msg.text}
+                      </div>
+                      <button
+                        onClick={() => deleteChatMessage(msg.id)}
+                        title="Delete message"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          fontSize: '0.75rem',
+                          opacity: 0.6,
+                          padding: '0 2px',
+                          transition: 'opacity 0.2s'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
+                      >
+                        ✕
+                      </button>
                     </div>
-                  )}
+
+                    {msg.datasets && msg.datasets.length > 0 && (
+                      <div style={{ marginTop: '0.6rem' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>Extracted Datasets:</span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.25rem' }}>
+                          {msg.datasets.map((d, i) => (
+                            <span key={i} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#c084fc', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>
+                              📊 {d}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {msg.sources && msg.sources.length > 0 && (
+                      <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.3rem', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>Sources:</span>
+                        {msg.sources.map((s, i) => (
+                          <span key={i} className="citation-chip" onClick={() => navigate('/library')}>📄 {s}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+
+              {isTyping && (
+                <div className="chat-msg assistant">
+                  <div className="chat-bubble" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    <span style={{ animation: 'pulse 1s infinite' }}>🤖</span>
+                    <span>AI Assistant is analyzing papers & generating RAG synthesis...</span>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div style={{ textAlign: 'center', margin: 'auto', color: 'var(--text-muted)' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>💬</div>
@@ -213,6 +237,7 @@ const AIChatPage = () => {
               <p style={{ fontSize: '0.88rem', marginTop: '0.3rem' }}>Ask questions about your uploaded papers or pick a suggested prompt on the left.</p>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Bar */}

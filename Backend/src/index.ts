@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { registerUser, loginUser, authMiddleware } from './auth';
 import { initializeDatabase, getAllPapers, getPaperById, addPaper, deletePaperById, clearAllPapersFromDb, getChatHistory, addChatMessage, deleteChatMessageById, deleteChatSession, clearAllChatHistory } from './db';
+import { retrieveRelevantPapers, generateRAGResponse } from './rag';
 
 dotenv.config();
 
@@ -136,21 +137,24 @@ app.get('/api/chat', async (_req: Request, res: Response) => {
 });
 
 app.post('/api/chat', async (req: Request, res: Response) => {
-  const { message } = req.body;
+  const { message, sessionId = 'default' } = req.body;
   if (!message) {
     res.status(400).json({ message: 'Message text is required' });
     return;
   }
 
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
   const userMsg: ChatMessage = {
     id: Date.now().toString(),
     sender: 'user',
     text: message,
-    timestamp: 'Just now'
+    timestamp
   };
 
   await addChatMessage({
     id: userMsg.id,
+    sessionId,
     sender: userMsg.sender,
     text: userMsg.text,
     timestamp: userMsg.timestamp,
@@ -158,32 +162,32 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     sources: JSON.stringify([])
   });
 
-  let aiText = `Regarding "${message}", attention mechanisms and self-attention layers enable neural models to dynamically route contextual information across all tokens.`;
-  let sources = ['Attention Is All You Need (2017)', 'BERT (2018)'];
+  // 1. Fetch all library papers from database
+  const allPapers = await getAllPapers();
 
-  if (message.toLowerCase().includes('dataset')) {
-    aiText = 'The most frequently cited benchmarking datasets in your paper library include ImageNet, COCO, BooksCorpus, and WMT 2014 En-De.';
-    sources = ['EfficientNet (2019)', 'ViT (2020)', 'Attention Is All You Need (2017)'];
-  } else if (message.toLowerCase().includes('compare') || message.toLowerCase().includes('vs')) {
-    aiText = 'Comparing Transformer backbones with CNNs shows that Transformers achieve higher SOTA accuracy on large datasets but require longer warm-up schedules.';
-    sources = ['ViT (2020)', 'EfficientNet (2019)'];
-  }
+  // 2. Perform RAG retrieval ranking
+  const relevantPapers = retrieveRelevantPapers(message, allPapers);
+
+  // 3. Generate RAG answer (via Gemini API or Grounded Local RAG Synthesis)
+  const ragResult = await generateRAGResponse(message, relevantPapers);
 
   const assistantMsg: ChatMessage = {
     id: (Date.now() + 1).toString(),
     sender: 'assistant',
-    text: aiText,
-    timestamp: 'Just now',
-    sources
+    text: ragResult.text,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    sources: ragResult.sources,
+    datasets: ragResult.datasets
   };
 
   await addChatMessage({
     id: assistantMsg.id,
+    sessionId,
     sender: assistantMsg.sender,
     text: assistantMsg.text,
     timestamp: assistantMsg.timestamp,
-    datasets: JSON.stringify([]),
-    sources: JSON.stringify(sources)
+    datasets: JSON.stringify(ragResult.datasets || []),
+    sources: JSON.stringify(ragResult.sources || [])
   });
 
   res.status(201).json({ userMessage: userMsg, assistantMessage: assistantMsg });
@@ -215,24 +219,6 @@ app.post('/api/review/generate', (req: Request, res: Response) => {
     reviewType: reviewType || 'Comprehensive',
     selectedPapersCount: selectedPapers ? selectedPapers.length : 3,
     summary: `Literature review synthesized for "${topic}". Found key thematic alignment in attention mechanisms and model scaling across selected papers.`
-  });
-});
-
-/* Analytics API */
-app.get('/api/analytics', async (_req: Request, res: Response) => {
-  const papers = await getAllPapers();
-  const messages = await getChatHistory();
-  res.json({
-    totalPapers: papers.length,
-    conversations: messages.filter((m) => m.sender === 'user').length,
-    reviewsGenerated: 15,
-    hoursSaved: 36.5,
-    trends: {
-      papersUploaded: '+40% vs last 30 days',
-      conversations: '+20% vs last 30 days',
-      reviews: '+60% vs last 30 days',
-      hoursSaved: '+25% vs last 30 days'
-    }
   });
 });
 

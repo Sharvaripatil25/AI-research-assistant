@@ -208,20 +208,6 @@ body {
   opacity: 0.3;
 }
 
-.pro-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-indigo));
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
 
 .sidebar-footer p {
   font-size: 0.8rem;
@@ -1337,28 +1323,6 @@ body {
   align-items: center;
   gap: 0.25rem;
 }
-
-/* Screen #9 - Analytics Overview */
-.analytics-grid {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.chart-container {
-  padding: 1.5rem;
-  border-radius: var(--radius-xl);
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-}
-
-.analytics-bottom-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-
 /* Animations */
 @keyframes pulse {
   0% { transform: scale(1); opacity: 1; }

@@ -29,6 +29,7 @@ export interface PaperRecord {
 
 export interface ChatMessageRecord {
   id: string;
+  sessionId?: string;
   sender: 'user' | 'assistant';
   text: string;
   timestamp: string;
@@ -164,9 +165,9 @@ export const getChatHistory = async (): Promise<ChatMessageRecord[]> => {
 
 export const addChatMessage = async (message: ChatMessageRecord): Promise<ChatMessageRecord> => {
   await runAsync(`
-    INSERT INTO chat_messages (id, sender, text, timestamp, datasets, sources)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `, [message.id, message.sender, message.text, message.timestamp, message.datasets, message.sources]);
+    INSERT INTO chat_messages (id, sessionId, sender, text, timestamp, datasets, sources)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `, [message.id, message.sessionId || 'default', message.sender, message.text, message.timestamp, message.datasets, message.sources]);
   return message;
 };
 

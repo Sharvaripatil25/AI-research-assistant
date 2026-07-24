@@ -16,7 +16,6 @@ const navItems = [
   { label: 'Compare Papers', path: '/compare', icon: '⚖️' },
   { label: 'Literature Review', path: '/review', icon: '📝' },
   { label: 'Collections', path: '/collections', icon: '🔍' },
-  { label: 'Analytics', path: '/analytics', icon: '📊' },
   { label: 'Settings', path: '/settings', icon: '⚙️' }
 ];
 
@@ -73,18 +72,6 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <div className="pro-badge">⚡ {user?.plan || 'Pro Plan'}</div>
-          <p>Unlimited research access & smart synthesis.</p>
-          <button
-            className="primary-button"
-            style={{ width: '100%', fontSize: '0.8rem', padding: '0.5rem' }}
-            type="button"
-            onClick={() => navigate('/settings')}
-          >
-            Manage Plan
-          </button>
-        </div>
       </aside>
 
       <main className="content-area">

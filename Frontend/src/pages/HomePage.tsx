@@ -58,10 +58,7 @@ const HomePage = () => {
 
         <div style={{ width: '1px', height: '30px', background: 'rgba(255, 255, 255, 0.08)' }} />
 
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
-          onClick={() => navigate('/analytics')}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ fontSize: '1.4rem' }}>⏱️</span>
           <div>
             <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{totalHoursSaved}h</div>

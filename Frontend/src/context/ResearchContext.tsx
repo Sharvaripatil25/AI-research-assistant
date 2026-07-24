@@ -35,7 +35,7 @@ export interface UserProfile {
   email: string;
   name: string;
   avatarInitials: string;
-  plan: string;
+  plan?: string;
 }
 
 interface ResearchContextType {
@@ -52,6 +52,7 @@ interface ResearchContextType {
   activeSessionId: string | null;
   activeSession: ChatSession | null;
   chatMessages: ChatMessage[];
+  isTyping: boolean;
   sendMessage: (text: string) => void;
   deleteChatMessage: (id: string) => void;
   deleteChatSession: (sessionId: string) => void;
@@ -78,8 +79,7 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     return {
       email: 'researcher@domain.com',
       name: 'Dr. Researcher',
-      avatarInitials: 'DR',
-      plan: 'Pro Plan'
+      avatarInitials: 'DR'
     };
   });
 
@@ -200,7 +200,9 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('research_papers');
   };
 
-  const sendMessage = (text: string) => {
+  const [isTyping, setIsTyping] = useState(false);
+
+  const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
     const userMsg: ChatMessage = {
@@ -213,13 +215,18 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     let targetSessionId = activeSessionId;
     let titleText = text.length > 30 ? text.slice(0, 30) + '...' : text;
 
+    if (!targetSessionId) {
+      targetSessionId = Date.now().toString();
+      setActiveSessionId(targetSessionId);
+    }
+
+    const currentSessionId = targetSessionId;
+
     setChatSessions(prevSessions => {
-      let existingIndex = prevSessions.findIndex(s => s.id === targetSessionId);
-      if (existingIndex === -1 || !targetSessionId) {
-        targetSessionId = Date.now().toString();
-        setActiveSessionId(targetSessionId);
+      let existingIndex = prevSessions.findIndex(s => s.id === currentSessionId);
+      if (existingIndex === -1) {
         const newSession: ChatSession = {
-          id: targetSessionId,
+          id: currentSessionId,
           title: titleText,
           createdAt: new Date().toLocaleDateString(),
           messages: [userMsg]
@@ -235,35 +242,68 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    setTimeout(() => {
-      let aiText = `Regarding "${text}", Transformer models rely on self-attention mechanisms to calculate contextual representations without recurrent bottlenecks.`;
-      let sources = papers.length > 0 ? [papers[0].title] : [];
+    setIsTyping(true);
 
-      if (text.toLowerCase().includes('dataset')) {
-        aiText = 'Commonly used datasets across your research workspace include ImageNet, COCO, BooksCorpus, and WMT 2014 En-De.';
-      } else if (text.toLowerCase().includes('compare') || text.toLowerCase().includes('performance')) {
-        aiText = 'Comparison indicates Vision Transformers outperform traditional CNNs when trained on large-scale datasets such as JFT-300M.';
-      }
+    try {
+      const response = await axios.post(`${API_URL}/chat`, { message: text, sessionId: currentSessionId });
+      const { assistantMessage } = response.data;
 
       const assistantMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: assistantMessage?.id || (Date.now() + 1).toString(),
         sender: 'assistant',
-        text: aiText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sources
+        text: assistantMessage?.text || 'RAG response generated.',
+        timestamp: assistantMessage?.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sources: assistantMessage?.sources || [],
+        datasets: assistantMessage?.datasets || []
       };
 
       setChatSessions(prevSessions => {
         return prevSessions.map(s => {
-          if (s.id === targetSessionId) {
+          if (s.id === currentSessionId) {
             return { ...s, messages: [...s.messages, assistantMsg] };
           }
           return s;
         });
       });
+    } catch {
+      // Dynamic fallback assistant response if backend is offline
+      let fallbackText = '';
+      const lower = text.toLowerCase().trim();
 
-      axios.post(`${API_URL}/chat`, { message: text }).catch(() => {});
-    }, 600);
+      if (/^(hello|hi|hey|greetings|good morning|good afternoon)/i.test(lower)) {
+        fallbackText = `Hello! 👋 I am your AI Research Assistant.\n\nHow can I help with your research, paper analysis, or literature review today?`;
+      } else if (lower.includes('scopus') || lower.includes('h-index') || lower.includes('journal')) {
+        fallbackText = `**Scopus papers** are peer-reviewed research publications indexed in Elsevier's **Scopus database**—one of the largest global scholarly citation databases.\n\n` +
+          `### Key Highlights:\n` +
+          `- **Quality Standard**: Indexed journals undergo rigorous peer-review evaluation by the Content Selection & Advisory Board (CSAB).\n` +
+          `- **Metrics**: Scopus tracks citation metrics such as **CiteScore**, **SJR**, and author **h-index**.`;
+      } else if (lower.includes('dataset') || lower.includes('data')) {
+        fallbackText = `Commonly benchmarked datasets across AI and machine learning research include:\n\n- **Vision**: ImageNet, COCO, CIFAR-10\n- **NLP**: GLUE, SQuAD, WMT 2014 En-De, BooksCorpus`;
+      } else {
+        fallbackText = `Regarding **"${text}"**:\n\n` +
+          `- **Research Context**: Deep learning research emphasizes attention mechanisms, model scaling, and systematic evaluation.\n` +
+          (papers.length > 0 ? `- **Indexed Sources**: ${papers[0].title}` : `- **Library**: Upload papers to get detailed paper-grounded answers.`);
+      }
+
+      const fallbackMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: 'assistant',
+        text: fallbackText,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sources: papers.length > 0 ? [papers[0].title] : []
+      };
+
+      setChatSessions(prevSessions => {
+        return prevSessions.map(s => {
+          if (s.id === currentSessionId) {
+            return { ...s, messages: [...s.messages, fallbackMsg] };
+          }
+          return s;
+        });
+      });
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const deleteChatMessage = (id: string) => {
@@ -335,6 +375,7 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
         activeSessionId,
         activeSession,
         chatMessages,
+        isTyping,
         sendMessage,
         deleteChatMessage,
         deleteChatSession,

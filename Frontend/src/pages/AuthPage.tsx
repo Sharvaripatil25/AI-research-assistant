@@ -46,8 +46,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
       setUser({
         email,
         name: displayName,
-        avatarInitials: initials,
-        plan: 'Pro Plan'
+        avatarInitials: initials
       });
 
       setMessage(isLogin ? 'Login successful!' : 'Account created successfully!');
@@ -56,8 +55,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
       setUser({
         email: email || 'researcher@domain.com',
         name: displayName,
-        avatarInitials: initials,
-        plan: 'Pro Plan'
+        avatarInitials: initials
       });
       setMessage(isLogin ? 'Login successful!' : 'Account created successfully!');
       setTimeout(() => navigate('/dashboard'), 300);
