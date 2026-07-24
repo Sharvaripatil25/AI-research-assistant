@@ -1,188 +1,258 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
+import {
+  UploadCloud,
+  FileText,
+  MessageSquare,
+  ArrowRight,
+  Scale,
+  Upload,
+  BookOpen
+} from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { papers, chatSessions, user } = useResearch();
+  const { papers, chatSessions, user, sendMessage } = useResearch();
+  const [bannerQuery, setBannerQuery] = useState('');
 
-  const recentPapers = papers.slice(0, 3);
-  const totalHoursSaved = (papers.length * 1.5 + chatSessions.length * 0.5).toFixed(1);
+  const currentHour = new Date().getHours();
+  const timeGreeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+  const userName = user?.name ? user.name.split(' ')[0] : 'Arjun';
+
+  const handleAskQuestion = (queryText?: string) => {
+    const q = queryText || bannerQuery;
+    if (!q.trim()) return;
+    sendMessage(q);
+    navigate('/chat');
+  };
+
+  // Sample default papers if library is empty to match reference mockup
+  const displayPapers = papers.length > 0 ? papers : [
+    {
+      id: 'attention-is-all-you-need',
+      title: 'Attention Is All You Need',
+      authors: 'Vaswani et al., 2017',
+      category: 'Neural Networks',
+      timeAgo: '2 days ago'
+    },
+    {
+      id: 'efficientnet',
+      title: 'EfficientNet: Rethinking Model Scaling',
+      authors: 'Tan & Le, 2019',
+      category: 'Computer Vision',
+      timeAgo: '3 days ago'
+    },
+    {
+      id: 'gnn-survey',
+      title: 'A Survey on Graph Neural Networks',
+      authors: 'Zhou et al., 2020',
+      category: 'Graph ML',
+      timeAgo: '5 days ago'
+    },
+    {
+      id: 'rl-robotics',
+      title: 'Reinforcement Learning for Robotics',
+      authors: 'Kober et al., 2013',
+      category: 'Robotics',
+      timeAgo: '1 week ago'
+    },
+    {
+      id: 'bert',
+      title: 'BERT: Pre-training of Deep Bidirectional Transformers',
+      authors: 'Devlin et al., 2018',
+      category: 'NLP',
+      timeAgo: '1 week ago'
+    }
+  ];
+
+  // Sample default continue sessions to match reference mockup
+  const displayChats = chatSessions.length > 0 ? chatSessions.map((s, idx) => ({
+    id: s.id,
+    title: s.title,
+    timeAgo: idx === 0 ? '2 hours ago' : idx === 1 ? 'Yesterday' : `${idx + 1} days ago`
+  })) : [
+    { id: '1', title: 'What are the limitations of Transformer models?', timeAgo: '2 hours ago' },
+    { id: '2', title: 'Compare the performance of ResNet and EfficientNet.', timeAgo: 'Yesterday' },
+    { id: '3', title: 'Explain the methodology used in EfficientNet.', timeAgo: '2 days ago' },
+    { id: '4', title: 'How does attention mechanism work?', timeAgo: '3 days ago' }
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      {/* Clean Hero Header */}
-      <div className="page-header" style={{ marginBottom: 0 }}>
-        <div className="page-title-group">
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Welcome back, {user?.name || 'Researcher'} 👋</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '0.25rem' }}>
-            Your AI-powered workspace for paper indexing, literature synthesis, and smart context Q&A.
-          </p>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '2rem' }}>
+      {/* Header Greeting */}
+      <div>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-main)', margin: 0, letterSpacing: '-0.02em' }}>
+          {timeGreeting}, {userName}
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: '0.2rem' }}>
+          Let's make your research smarter today.
+        </p>
       </div>
 
-      {/* Sleek Workspace Summary Bar */}
-      <div
-        className="glass-panel"
-        style={{
-          padding: '1rem 1.5rem',
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          gap: '1rem',
-          borderRadius: 'var(--radius-xl)'
-        }}
-      >
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
-          onClick={() => navigate('/library')}
-        >
-          <span style={{ fontSize: '1.4rem' }}>📄</span>
+      {/* Split Top Action Banner */}
+      <div className="banner-split-card">
+        {/* Left: Drag & Drop Upload */}
+        <div className="banner-left-area" onClick={() => navigate('/upload')}>
+          <div className="cloud-icon-circle">
+            <UploadCloud size={22} color="var(--accent-purple)" />
+          </div>
           <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{papers.length}</div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Papers Uploaded</div>
+            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-main)' }}>
+              Upload papers to your library
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+              Drag & drop your PDF files here or <span className="browse-link">browse</span>
+            </div>
           </div>
         </div>
 
-        <div style={{ width: '1px', height: '30px', background: 'rgba(255, 255, 255, 0.08)' }} />
-
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
-          onClick={() => navigate('/chat')}
-        >
-          <span style={{ fontSize: '1.4rem' }}>💬</span>
-          <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{chatSessions.length}</div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>AI Conversations</div>
-          </div>
+        {/* Center OR Divider */}
+        <div className="banner-divider">
+          <span className="or-badge">OR</span>
         </div>
 
-        <div style={{ width: '1px', height: '30px', background: 'rgba(255, 255, 255, 0.08)' }} />
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '1.4rem' }}>⏱️</span>
-          <div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{totalHoursSaved}h</div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Research Time Saved</div>
+        {/* Right: Ask Question Search Bar */}
+        <div className="banner-right-area">
+          <div className="query-input-bar">
+            <input
+              type="text"
+              placeholder="Ask a question about your papers..."
+              value={bannerQuery}
+              onChange={(e) => setBannerQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAskQuestion()}
+            />
+            <button className="send-query-btn" onClick={() => handleAskQuestion()} title="Ask AI">
+              <ArrowRight size={16} color="#fff" />
+            </button>
+          </div>
+          <div className="try-hint-text">
+            Try: <span className="hint-clickable" onClick={() => handleAskQuestion('What are the limitations of Transformer models?')}>
+              "What are the limitations of Transformer models?"
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 3 Quick Action Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1.25rem' }}>
-        <div
-          className="glass-panel"
-          style={{
-            padding: '1.5rem',
-            cursor: 'pointer',
-            transition: 'all 0.25s ease',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(13, 14, 29, 0.6) 100%)'
-          }}
-          onClick={() => navigate('/upload')}
-        >
-          <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📤</div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.35rem' }}>Upload Paper</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-            Select or drag & drop PDF papers to index vectors and extract citations.
-          </p>
-        </div>
-
-        <div
-          className="glass-panel"
-          style={{
-            padding: '1.5rem',
-            cursor: 'pointer',
-            transition: 'all 0.25s ease',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(13, 14, 29, 0.6) 100%)'
-          }}
-          onClick={() => navigate('/chat')}
-        >
-          <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>💬</div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.35rem' }}>AI Research Chat</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-            Ask natural language questions across all papers in your workspace.
-          </p>
-        </div>
-
-        <div
-          className="glass-panel"
-          style={{
-            padding: '1.5rem',
-            cursor: 'pointer',
-            transition: 'all 0.25s ease',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(13, 14, 29, 0.6) 100%)'
-          }}
-          onClick={() => navigate('/review')}
-        >
-          <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📝</div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.35rem' }}>Literature Review</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-            Synthesize comprehensive literature reviews across selected research papers.
-          </p>
-        </div>
-      </div>
-
-      {/* Recent Activity Panel */}
-      {papers.length > 0 ? (
-        <div className="glass-panel" style={{ padding: '1.25rem 1.5rem' }}>
-          <div className="panel-header" style={{ marginBottom: '1rem' }}>
-            <h3 className="panel-title" style={{ fontSize: '1rem', fontWeight: 700 }}>
-              Recent Research Papers ({papers.length})
+      {/* Two Column Main Content Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        {/* Left Column: Recent Papers */}
+        <div className="dashboard-card-panel">
+          <div className="card-panel-header">
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+              Recent Papers
             </h3>
-            <button className="link-btn" onClick={() => navigate('/library')}>
-              View Library →
+            <button className="view-all-btn" onClick={() => navigate('/library')}>
+              View all
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            {recentPapers.map((paper) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            {displayPapers.slice(0, 5).map((paper: any) => (
               <div
                 key={paper.id}
-                className="paper-list-item"
-                onClick={() => navigate(`/library/${paper.id}`)}
-                style={{ cursor: 'pointer', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}
+                className="recent-paper-row"
+                onClick={() => navigate('/library')}
               >
-                <div className="paper-info">
-                  <h4 style={{ fontSize: '0.92rem', fontWeight: 600 }}>{paper.title}</h4>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    {paper.authors} ({paper.year}) &nbsp;•&nbsp; {paper.publishedIn}
-                  </p>
+                <div className="pdf-icon-badge">
+                  <FileText size={16} color="#ef4444" />
                 </div>
-                <span className="time-stamp" style={{ fontSize: '0.75rem' }}>View Paper →</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="paper-row-title">{paper.title}</div>
+                  <div className="paper-row-sub">
+                    {paper.authors} {paper.category ? `• ${paper.category}` : ''}
+                  </div>
+                </div>
+                <div className="paper-row-time">{paper.timeAgo || 'Recent'}</div>
               </div>
             ))}
           </div>
         </div>
-      ) : (
-        <div
-          className="glass-panel"
-          style={{
-            textAlign: 'center',
-            padding: '2.5rem 1.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}
-        >
-          <div style={{ fontSize: '2.5rem' }}>📁</div>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Your Workspace is Ready</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', maxWidth: '420px' }}>
-            Upload your first research paper to start generating vector embeddings, running AI chats, and synthesizing reviews.
-          </p>
-          <button
-            className="primary-button"
-            style={{ marginTop: '0.5rem', padding: '0.65rem 1.75rem', fontSize: '0.88rem' }}
-            onClick={() => navigate('/upload')}
-          >
-            📤 Upload Paper Now
-          </button>
+
+        {/* Right Column: Continue Where You Left Off */}
+        <div className="dashboard-card-panel">
+          <div className="card-panel-header">
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+              Continue where you left off
+            </h3>
+            <button className="view-all-btn" onClick={() => navigate('/chat')}>
+              View all
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            {displayChats.slice(0, 5).map((chat: any) => (
+              <div
+                key={chat.id}
+                className="recent-paper-row"
+                onClick={() => navigate('/chat')}
+              >
+                <div className="chat-icon-badge">
+                  <MessageSquare size={16} color="var(--accent-purple)" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="paper-row-title">{chat.title}</div>
+                </div>
+                <div className="paper-row-time">{chat.timeAgo || 'Today'}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Bottom 4 Quick Action Tool Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '1rem' }}>
+        {/* Tool 1 */}
+        <div className="quick-action-card" onClick={() => navigate('/upload')}>
+          <div className="action-card-header">
+            <div className="action-card-icon" style={{ background: 'rgba(99, 102, 241, 0.12)', color: '#6366F1' }}>
+              <Upload size={18} />
+            </div>
+            <ArrowRight className="arrow-indicator" size={16} />
+          </div>
+          <div className="action-card-title">Upload Paper</div>
+          <div className="action-card-desc">Add new research papers to your library</div>
+        </div>
+
+        {/* Tool 2 */}
+        <div className="quick-action-card" onClick={() => navigate('/chat')}>
+          <div className="action-card-header">
+            <div className="action-card-icon" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10B981' }}>
+              <MessageSquare size={18} />
+            </div>
+            <ArrowRight className="arrow-indicator" size={16} />
+          </div>
+          <div className="action-card-title">AI Chat</div>
+          <div className="action-card-desc">Ask questions and get AI-powered answers</div>
+        </div>
+
+        {/* Tool 3 */}
+        <div className="quick-action-card" onClick={() => navigate('/compare')}>
+          <div className="action-card-header">
+            <div className="action-card-icon" style={{ background: 'rgba(59, 130, 246, 0.12)', color: '#3B82F6' }}>
+              <Scale size={18} />
+            </div>
+            <ArrowRight className="arrow-indicator" size={16} />
+          </div>
+          <div className="action-card-title">Compare Papers</div>
+          <div className="action-card-desc">Compare multiple papers side by side</div>
+        </div>
+
+        {/* Tool 4 */}
+        <div className="quick-action-card" onClick={() => navigate('/review')}>
+          <div className="action-card-header">
+            <div className="action-card-icon" style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#F59E0B' }}>
+              <FileText size={18} />
+            </div>
+            <ArrowRight className="arrow-indicator" size={16} />
+          </div>
+          <div className="action-card-title">Literature Review</div>
+          <div className="action-card-desc">Generate comprehensive literature reviews</div>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default HomePage;
+

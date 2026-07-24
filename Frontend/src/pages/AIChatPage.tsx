@@ -1,13 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
+import { MessageSquare, Trash2, FileText, Bot, Paperclip } from 'lucide-react';
 
-const suggestedPrompts = [
-  'What datasets are commonly used in these papers?',
-  'Explain the transformer architecture.',
-  'Compare GNN models.',
-  'How does EfficientNet work?'
-];
 
 const AIChatPage = () => {
   const navigate = useNavigate();
@@ -68,8 +63,8 @@ const AIChatPage = () => {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '0.4rem' }}>
-                    💬 {session.title}
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, marginRight: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <MessageSquare size={14} /> {session.title}
                   </span>
                   <button
                     onClick={(e) => {
@@ -89,35 +84,13 @@ const AIChatPage = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
                   >
-                    🗑️
+                    <Trash2 size={13} />
                   </button>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem', fontWeight: 600 }}>SUGGESTED PROMPTS</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.25rem' }}>
-          {suggestedPrompts.map((prompt, idx) => (
-            <div
-              key={idx}
-              style={{
-                padding: '0.5rem 0.75rem',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                fontSize: '0.82rem',
-                color: 'var(--text-main)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onClick={() => handleSend(prompt)}
-            >
-              💬 {prompt}
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Main Chat Area */}
@@ -213,7 +186,9 @@ const AIChatPage = () => {
                       <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.3rem', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>Sources:</span>
                         {msg.sources.map((s, i) => (
-                          <span key={i} className="citation-chip" onClick={() => navigate('/library')}>📄 {s}</span>
+                          <span key={i} className="citation-chip" onClick={() => navigate('/library')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <FileText size={12} /> {s}
+                          </span>
                         ))}
                       </div>
                     )}
@@ -224,7 +199,7 @@ const AIChatPage = () => {
               {isTyping && (
                 <div className="chat-msg assistant">
                   <div className="chat-bubble" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                    <span style={{ animation: 'pulse 1s infinite' }}>🤖</span>
+                    <Bot size={18} color="var(--accent-purple)" style={{ animation: 'pulse 1s infinite' }} />
                     <span>AI Assistant is analyzing papers & generating RAG synthesis...</span>
                   </div>
                 </div>
@@ -232,9 +207,11 @@ const AIChatPage = () => {
             </>
           ) : (
             <div style={{ textAlign: 'center', margin: 'auto', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>💬</div>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                <MessageSquare size={42} color="var(--accent-purple)" />
+              </div>
               <h3>Start an AI Chat session</h3>
-              <p style={{ fontSize: '0.88rem', marginTop: '0.3rem' }}>Ask questions about your uploaded papers or pick a suggested prompt on the left.</p>
+              <p style={{ fontSize: '0.88rem', marginTop: '0.3rem' }}>Ask questions about your uploaded research papers or academic topics.</p>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -242,7 +219,9 @@ const AIChatPage = () => {
 
         {/* Input Bar */}
         <div className="chat-input-container">
-          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/upload')} title="Upload paper context">📎</span>
+          <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => navigate('/upload')} title="Upload paper context">
+            <Paperclip size={18} color="var(--text-muted)" />
+          </span>
           <input
             type="text"
             placeholder="Ask a follow-up question..."

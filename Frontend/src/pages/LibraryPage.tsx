@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
+import { Trash2, RotateCcw, Upload, Search, FileText, Plus } from 'lucide-react';
 
 const LibraryPage = () => {
   const navigate = useNavigate();
@@ -27,18 +28,18 @@ const LibraryPage = () => {
           {papers.length > 0 ? (
             <button
               className="secondary-button"
-              style={{ color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+              style={{ color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               onClick={() => { if (window.confirm('Clear all papers from workspace?')) clearAllPapers(); }}
             >
-              🗑️ Clear All
+              <Trash2 size={14} /> Clear All
             </button>
           ) : (
-            <button className="secondary-button" onClick={resetToSamplePapers}>
-              🔄 Load Sample Papers
+            <button className="secondary-button" onClick={resetToSamplePapers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <RotateCcw size={14} /> Load Sample Papers
             </button>
           )}
-          <button className="primary-button" onClick={() => navigate('/upload')}>
-            <span>+ Upload Paper</span>
+          <button className="primary-button" onClick={() => navigate('/upload')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <Plus size={16} /> <span>Upload Paper</span>
           </button>
         </div>
       </div>
@@ -47,7 +48,7 @@ const LibraryPage = () => {
       <div className="library-filter-bar">
         <div className="filter-left">
           <div className="search-bar" style={{ maxWidth: '300px' }}>
-            <span>🔍</span>
+            <Search size={16} color="var(--text-muted)" />
             <input
               type="text"
               placeholder="Search papers..."
@@ -115,7 +116,7 @@ const LibraryPage = () => {
                     onClick={(e) => { e.stopPropagation(); deletePaper(paper.id); }}
                     title="Delete paper"
                   >
-                    🗑️
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
@@ -140,17 +141,19 @@ const LibraryPage = () => {
           ))
         ) : (
           <div className="glass-panel" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem 2rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📄</div>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+              <FileText size={42} color="var(--text-muted)" />
+            </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Your research library is empty</h3>
             <p style={{ color: 'var(--text-muted)', marginTop: '0.4rem', marginBottom: '1.5rem' }}>
               Upload your own PDF research papers or load sample papers to get started.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <button className="primary-button" onClick={() => navigate('/upload')}>
-                📤 Upload Your First Paper
+              <button className="primary-button" onClick={() => navigate('/upload')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Upload size={16} /> Upload Your First Paper
               </button>
-              <button className="secondary-button" onClick={resetToSamplePapers}>
-                🔄 Load Sample Papers
+              <button className="secondary-button" onClick={resetToSamplePapers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <RotateCcw size={14} /> Load Sample Papers
               </button>
             </div>
           </div>

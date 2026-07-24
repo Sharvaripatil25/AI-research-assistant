@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useResearch } from '../context/ResearchContext';
+import { Sparkles } from 'lucide-react';
 
 const LiteratureReviewPage = () => {
   const { papers } = useResearch();
@@ -93,12 +94,13 @@ const LiteratureReviewPage = () => {
                     key={p.id}
                     className={`paper-select-card ${isSelected ? 'selected' : ''}`}
                     onClick={() => togglePaperSelect(p.id)}
+                    style={{ background: isSelected ? 'var(--accent-tint)' : 'var(--bg-card)', borderColor: isSelected ? 'var(--accent-purple)' : 'var(--border-color)' }}
                   >
                     <div style={{ fontSize: '0.75rem', color: isSelected ? 'var(--accent-purple)' : 'var(--text-dim)', fontWeight: 700 }}>
                       {isSelected ? '✓ Selected' : '+ Select'}
                     </div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.2rem' }}>{p.title}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{p.authors} ({p.year})</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.2rem', color: 'var(--text-main)' }}>{p.title}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.authors} ({p.year})</div>
                   </div>
                 );
               })}
@@ -133,7 +135,7 @@ const LiteratureReviewPage = () => {
                 height: '80px',
                 borderRadius: 'var(--radius-md)',
                 background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
+                border: '1px solid var(--border-color)',
                 color: 'var(--text-main)',
                 padding: '0.75rem',
                 font: 'inherit',
@@ -146,47 +148,47 @@ const LiteratureReviewPage = () => {
             />
           </div>
 
-          <button className="primary-button" style={{ width: '100%', padding: '0.85rem' }} onClick={handleGenerate}>
-            ✨ Generate Review
+          <button className="primary-button" style={{ width: '100%', padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }} onClick={handleGenerate}>
+            <Sparkles size={16} /> Generate Review
           </button>
         </div>
 
         {/* Right Progress / Output Pane */}
         <div className="progress-container">
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>
             {progressStep === 0 ? 'Ready to Generate Review' : progressStep === 5 ? 'Review Generation Complete' : 'Generating Review...'}
           </h3>
 
           <div className="step-checklist">
-            <div className="step-item">
+            <div className="step-item" style={{ color: 'var(--text-main)' }}>
               <div className={`step-icon ${progressStep > 1 ? 'done' : progressStep === 1 ? 'active' : 'pending'}`}>
                 {progressStep > 1 ? '✓' : '1'}
               </div>
               <span>Analysing papers</span>
             </div>
 
-            <div className="step-item">
+            <div className="step-item" style={{ color: 'var(--text-main)' }}>
               <div className={`step-icon ${progressStep > 2 ? 'done' : progressStep === 2 ? 'active' : 'pending'}`}>
                 {progressStep > 2 ? '✓' : '2'}
               </div>
               <span>Extracting key insights</span>
             </div>
 
-            <div className="step-item">
+            <div className="step-item" style={{ color: 'var(--text-main)' }}>
               <div className={`step-icon ${progressStep > 3 ? 'done' : progressStep === 3 ? 'active' : 'pending'}`}>
                 {progressStep > 3 ? '✓' : '3'}
               </div>
               <span>Identifying themes</span>
             </div>
 
-            <div className="step-item">
+            <div className="step-item" style={{ color: 'var(--text-main)' }}>
               <div className={`step-icon ${progressStep > 4 ? 'done' : progressStep === 4 ? 'active' : 'pending'}`}>
                 {progressStep > 4 ? '✓' : '4'}
               </div>
               <span>Drafting review</span>
             </div>
 
-            <div className="step-item">
+            <div className="step-item" style={{ color: 'var(--text-main)' }}>
               <div className={`step-icon ${progressStep === 5 ? 'done' : 'pending'}`}>
                 {progressStep === 5 ? '✓' : '5'}
               </div>

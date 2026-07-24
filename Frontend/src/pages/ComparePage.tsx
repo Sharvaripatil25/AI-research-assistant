@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useResearch } from '../context/ResearchContext';
+import { Download } from 'lucide-react';
 
 const ComparePage = () => {
   const { papers, comparedPaperIds, addPaperToCompare, removePaperFromCompare } = useResearch();
@@ -25,8 +26,8 @@ const ComparePage = () => {
           <h1>Compare Papers</h1>
           <p>Select 2 or more papers to analyze side-by-side.</p>
         </div>
-        <button className="secondary-button" onClick={handleExport}>
-          📥 Export Comparison
+        <button className="secondary-button" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <Download size={15} /> Export Comparison
         </button>
       </div>
 
@@ -63,13 +64,13 @@ const ComparePage = () => {
                 position: 'absolute',
                 top: '110%',
                 left: 0,
-                background: 'var(--sidebar-bg)',
-                border: '1px solid var(--card-border)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 borderRadius: '12px',
                 padding: '0.75rem',
                 zIndex: 100,
                 width: '260px',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                boxShadow: 'var(--card-shadow)'
               }}
             >
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>SELECT PAPER TO ADD:</div>
@@ -83,7 +84,8 @@ const ComparePage = () => {
                       fontSize: '0.82rem',
                       cursor: 'pointer',
                       marginBottom: '0.25rem',
-                      background: 'rgba(255,255,255,0.04)'
+                      background: 'var(--bg-card-hover)',
+                      color: 'var(--text-main)'
                     }}
                     onClick={() => { addPaperToCompare(p.id); setShowAddPicker(false); }}
                   >

@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useResearch } from '../context/ResearchContext';
+import { BookOpen, FileText, Scale, Sun, Moon, Sparkles } from 'lucide-react';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -69,20 +70,20 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
         display: 'grid',
         placeItems: 'center',
         padding: '2rem 1rem',
-        background: 'var(--bg-dark)',
-        backgroundImage:
-          'radial-gradient(circle at 50% 10%, rgba(139, 92, 246, 0.25) 0%, transparent 60%), linear-gradient(180deg, #090a16 0%, #060710 100%)'
+        backgroundColor: 'var(--bg-primary)',
+        backgroundImage: 'radial-gradient(circle at 50% 15%, var(--accent-tint) 0%, transparent 60%)',
+        transition: 'background-color 0.25s ease'
       }}
     >
       <div
-        className="glass-panel"
         style={{
           maxWidth: '920px',
           width: '100%',
-          padding: 0,
+          borderRadius: 'var(--radius-xl)',
           overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
-          border: '1px solid var(--card-border-glow)'
+          boxShadow: 'var(--card-shadow)',
+          border: '1px solid var(--border-color)',
+          background: 'var(--bg-card)'
         }}
       >
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '520px' }}>
@@ -90,52 +91,59 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
           <div
             style={{
               padding: '2.5rem',
-              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(13, 14, 29, 0.95) 100%)',
+              background: 'var(--bg-card-hover)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              borderRight: '1px solid rgba(255, 255, 255, 0.08)'
+              borderRight: '1px solid var(--border-color)'
             }}
           >
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
-                <div className="brand-mark">✨</div>
-                <span className="brand-title" style={{ fontSize: '1.25rem' }}>
+                <div className="brand-mark">
+                  <BookOpen size={20} />
+                </div>
+                <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>
                   AI Research Assistant
                 </span>
               </div>
 
-              <h1 style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '1rem' }}>
+              <h1 style={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1.25, marginBottom: '1rem', color: 'var(--text-main)' }}>
                 Research faster with an intelligent workspace.
               </h1>
 
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-                Upload papers, summarize findings, ask inline cited questions, compare benchmarks, and synthesize
-                literature reviews.
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                Upload papers, summarize findings, ask inline cited questions, compare benchmarks, and synthesize literature reviews.
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <span className="pill-tag pill-purple">📄 PDF RAG Analysis</span>
-                <span className="pill-tag pill-blue">⚖️ Matrix Comparison</span>
-                <span className="pill-tag pill-cyan">📝 Auto Literature Reviews</span>
+                <span className="pill-tag pill-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem' }}>
+                  <FileText size={13} /> PDF RAG Analysis
+                </span>
+                <span className="pill-tag pill-blue" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem' }}>
+                  <Scale size={13} /> Matrix Comparison
+                </span>
+                <span className="pill-tag pill-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem' }}>
+                  <Sparkles size={13} /> Auto Literature Reviews
+                </span>
               </div>
             </div>
 
             <button
-              className="icon-btn"
+              className="secondary-button"
               type="button"
               onClick={toggleTheme}
-              style={{ width: 'auto', padding: '0.5rem 1rem', display: 'inline-flex', gap: '0.5rem' }}
+              style={{ width: 'fit-content', padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
             >
-              {theme === 'dark' ? '☀️ Light Theme' : '🌙 Dark Theme'}
+              {theme === 'dark' ? <><Sun size={15} /> Light Mode</> : <><Moon size={15} /> Dark Mode</>}
             </button>
           </div>
 
           {/* Right Form Panel */}
-          <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--bg-card)' }}>
             <div style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.35rem' }}>
-                {isLogin ? 'Welcome back 👋' : 'Create your account 🚀'}
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.35rem', color: 'var(--text-main)' }}>
+                {isLogin ? 'Welcome back' : 'Create your account'}
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
                 {isLogin
@@ -144,7 +152,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               {!isLogin && (
                 <div>
                   <label
@@ -152,7 +160,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
                       display: 'block',
                       fontSize: '0.82rem',
                       color: 'var(--text-muted)',
-                      marginBottom: '0.3rem',
+                      marginBottom: '0.35rem',
                       fontWeight: 600
                     }}
                   >
@@ -160,8 +168,16 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
                   </label>
                   <input
                     type="text"
-                    className="search-bar"
-                    style={{ width: '100%', padding: '0.75rem 1rem' }}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--input-border)',
+                      color: 'var(--text-main)',
+                      outline: 'none',
+                      fontSize: '0.9rem'
+                    }}
                     placeholder="e.g. Dr. Sharvari Patil"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -175,7 +191,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
                     display: 'block',
                     fontSize: '0.82rem',
                     color: 'var(--text-muted)',
-                    marginBottom: '0.3rem',
+                    marginBottom: '0.35rem',
                     fontWeight: 600
                   }}
                 >
@@ -183,8 +199,16 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
                 </label>
                 <input
                   type="email"
-                  className="search-bar"
-                  style={{ width: '100%', padding: '0.75rem 1rem' }}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--input-border)',
+                    color: 'var(--text-main)',
+                    outline: 'none',
+                    fontSize: '0.9rem'
+                  }}
                   placeholder="researcher@university.edu"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -198,7 +222,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
                     display: 'block',
                     fontSize: '0.82rem',
                     color: 'var(--text-muted)',
-                    marginBottom: '0.3rem',
+                    marginBottom: '0.35rem',
                     fontWeight: 600
                   }}
                 >
@@ -206,8 +230,16 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
                 </label>
                 <input
                   type="password"
-                  className="search-bar"
-                  style={{ width: '100%', padding: '0.75rem 1rem' }}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--input-border)',
+                    color: 'var(--text-main)',
+                    outline: 'none',
+                    fontSize: '0.9rem'
+                  }}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -216,7 +248,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
               </div>
 
               {message && (
-                <div style={{ color: 'var(--accent-emerald)', fontSize: '0.85rem', fontWeight: 600 }}>
+                <div style={{ color: 'var(--accent-purple)', fontSize: '0.85rem', fontWeight: 600 }}>
                   {message}
                 </div>
               )}
@@ -234,8 +266,16 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
             <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
-                className="link-btn"
-                style={{ fontSize: '0.88rem' }}
+                type="button"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent-purple)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontSize: '0.88rem',
+                  padding: 0
+                }}
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setMessage('');

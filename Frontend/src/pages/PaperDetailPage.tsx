@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
+import { FileText, Sparkles, Trash2 } from 'lucide-react';
 
 const PaperDetailPage = () => {
   const navigate = useNavigate();
@@ -35,14 +36,14 @@ const PaperDetailPage = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="secondary-button" onClick={() => alert(`Opening PDF document for ${paper.title}...`)}>
-              📄 Open PDF
+            <button className="secondary-button" onClick={() => alert(`Opening PDF document for ${paper.title}...`)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <FileText size={15} /> Open PDF
             </button>
-            <button className="primary-button" onClick={() => navigate('/chat')}>
-              ✨ Ask AI about this paper
+            <button className="primary-button" onClick={() => navigate('/chat')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Sparkles size={15} /> Ask AI about this paper
             </button>
-            <button className="secondary-button" style={{ color: '#f87171' }} onClick={() => { deletePaper(paper.id); navigate('/library'); }}>
-              🗑️ Delete
+            <button className="secondary-button" style={{ color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={() => { deletePaper(paper.id); navigate('/library'); }}>
+              <Trash2 size={15} /> Delete
             </button>
           </div>
         </div>

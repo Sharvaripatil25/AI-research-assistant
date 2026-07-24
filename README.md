@@ -1,177 +1,180 @@
-# AI Research Assistant
+# AI Research Assistant 🔬
 
-AI Research Assistant is a full-stack web application designed for researchers who work with large collections of academic papers. Users can upload PDF documents, extract structured insights, ask questions across the uploaded corpus, compare papers, and generate literature reviews with AI-powered citations.
+AI Research Assistant is a full-stack, AI-powered academic research platform designed for researchers, students, and engineers. It allows users to store academic papers, perform **Retrieval-Augmented Generation (RAG)** over their personal paper library using **Google Gemini 2.5 Flash**, search live **arXiv preprints**, compare model methodologies side-by-side, and synthesize automated literature reviews.
 
-## What the application does
+---
 
-A researcher can upload multiple research papers in PDF format and use the platform to:
+## 🌟 Key Features Implemented
 
-- Summarize each paper
-- Answer questions across all uploaded papers using retrieval-augmented generation (RAG)
-- Compare two or more papers
-- Extract key research information such as datasets, methodology, results, and limitations
-- Find similar papers
-- Generate literature reviews
-- Provide citations for every answer
-- Save chats and summaries for later review
+### 1. 🤖 Interactive RAG Research Assistant (`/chat`)
+- **Retrieval-Augmented Generation (RAG)**: Scores and retrieves relevant research papers from your personal library based on weighted query match algorithm (title, abstract, tags, authors).
+- **Dual-Engine Response Generation**:
+  - **Primary Engine**: Google Gemini API integration (`@google/genai` model `gemini-2.5-flash`).
+  - **Fallback Engine**: Grounded Local RAG Synthesis for offline operation.
+- **Interactive Source Citations**: Links every answer back to specific research papers in your library.
+- **Benchmark Dataset Extraction**: Automatically identifies referenced datasets (e.g. *ImageNet, COCO, GLUE, SQuAD, WMT 2014*) and highlights them as tags.
+- **Multi-Session Chat History**: Manage and navigate multiple chat sessions backed by SQLite database storage.
 
-## Core product features
+### 2. 🌐 Live Academic Web Search (arXiv Integration)
+- **Real-Time arXiv Querying**: Search preprints across arXiv using the backend arXiv XML query API.
+- **One-Click Library Import**: Import searched arXiv papers directly into your persistent local library.
 
-### Phase 1 — Authentication
-- User login
-- User signup
-- Personal dashboard
+### 3. 📚 Workspace Paper Library (`/library`)
+- **Full Library CRUD**: Store paper title, authors, year, journal/venue, abstract, tags, citation counts, DOI, and page numbers.
+- **SQLite Persistence**: All papers and metadata are stored locally in an embedded SQLite database (`Backend/data/app.db`).
+- **Search & Filtering**: Instant search across titles, abstracts, tags, and publication year filters.
 
-### Phase 2 — Upload Papers
-- Drag-and-drop PDF uploads
-- Store paper metadata including:
-  - Title
-  - Authors
-  - Year
-  - Journal
-  - Abstract
-  - PDF file
+### 4. 📤 Paper Upload & Ingestion (`/upload`)
+- Drag-and-drop file upload interface for manual paper entry and metadata extraction.
+- Tabbed interface to toggle between local PDF upload and live arXiv search import.
 
-### Phase 3 — Document Processing
-When a paper is uploaded, the system processes it through the following pipeline:
+### 5. ⚖️ Multi-Paper Comparison Engine (`/compare`)
+- Select multiple papers to generate a structured side-by-side comparison matrix covering architectural differences, dataset usage, accuracy trade-offs, and key findings.
 
-PDF -> Extract text -> Split into chunks -> Generate embeddings -> Store embeddings -> Ready for search
+### 6. 📝 Automated Literature Review Generator (`/review`)
+- Synthesize topic-focused literature reviews across selected library papers with configurable review types (e.g., Comprehensive, Methodology Focus, Citation Analysis).
 
-### Phase 4 — RAG Chat
-Users can ask questions such as:
+### 7. 📁 Collections & Organization (`/collections`)
+- Organize research papers into custom tagged collections (e.g., *Transformer Architectures, Computer Vision, Reinforcement Learning*).
 
-> What datasets were used in these papers?
+### 8. 📊 Analytics & Metrics Dashboard (`/dashboard`)
+- Visual metrics tracking total papers, citation impact, publication timeline distribution, and top research keywords.
 
-The system retrieves relevant chunks, sends them to an LLM, and returns an answer with citations.
+### 9. 🔐 Authentication & Profile Management (`/auth`)
+- User signup and login system utilizing `bcryptjs` password hashing, JWT (`jsonwebtoken`), and `express-session`.
 
-### Phase 5 — Compare Papers
-Users can select multiple papers and receive an AI-generated comparison summary covering:
-- Dataset
-- Model
-- Accuracy
-- Limitations
-- Key findings
+### 10. ⚙️ Settings & Customization (`/settings`)
+- Configurable **Google Gemini API Key** setting.
+- Theme switcher (Dark Mode & Light Mode).
+- User profile updates and system diagnostics status.
 
-### Phase 6 — Literature Review
-Users can request a literature review such as:
+---
 
-> Write a literature review on Transformer-based object detection.
+## 🏗️ Architecture & Technology Stack
 
-The AI will review all selected papers, group related ideas, highlight differences, and cite the relevant sources.
+### **Frontend**
+- **Framework**: React 18 + TypeScript + Vite
+- **Routing**: React Router DOM (v6)
+- **UI & Styling**: Vanilla CSS with custom CSS variables (Design System with Dark/Light mode support)
+- **Icons**: Lucide React
+- **HTTP Client**: Axios
 
-### Phase 7 — Smart Search
-Users can search for concepts such as:
+### **Backend**
+- **Runtime & Server**: Node.js + Express.js + TypeScript (`ts-node-dev`)
+- **Database**: SQLite3 (`sqlite3`) with custom async database helpers
+- **Authentication**: `jsonwebtoken`, `bcryptjs`, `cookie-parser`, `express-session`
+- **AI Integration**: `@google/genai` SDK (Gemini 2.5 Flash)
+- **External APIs**: arXiv REST API
 
-> Reinforcement learning
+---
 
-The system returns matching papers, relevant sections, and similarity scores.
-
-### Phase 8 — Paper Dashboard
-Each paper card can display:
-- Title
-- Authors
-- Upload date
-- Number of chats
-- Summary
-- Keywords
-
-### Phase 9 — Citation Support
-Every AI-generated answer includes references such as:
-
-> According to Paper A (Section 4.2)...
-
-> Paper B reports 94.2% accuracy...
-
-### Phase 10 — AI Insights
-The system can automatically extract:
-- Research problem
-- Proposed method
-- Dataset
-- Metrics
-- Strengths
-- Weaknesses
-- Future work
-
-## Tech stack
-
-### Frontend
-- React + TypeScript
-- Tailwind CSS
-- React Router
-- TanStack Query
-- shadcn/ui
-- PDF viewer
-
-### Backend
-- Node.js
-- Express
-- TypeScript
-
-### Database
-- PostgreSQL
-
-### Vector Database
-- pgvector (inside PostgreSQL)
-
-### AI
-- Gemini API or OpenAI
-- Embedding model
-- LangChain (optional)
-
-### Storage
-- Supabase Storage or Cloudinary
-
-### Authentication
-- Clerk or Supabase Auth
-
-### Deployment
-- Frontend: Vercel
-- Backend: Railway
-- Database: Neon
-
-## Recommended project structure
+## 📂 Project Structure
 
 ```text
 AI-research-assistant/
 ├── Backend/
+│   ├── data/              # SQLite database storage (app.db)
+│   ├── src/
+│   │   ├── index.ts       # Express server & API endpoints
+│   │   ├── rag.ts         # RAG retrieval algorithm & Gemini AI generation
+│   │   ├── db.ts          # SQLite schema & database query helpers
+│   │   └── auth.ts        # User registration, authentication & JWT middleware
+│   ├── package.json
+│   └── tsconfig.json
 ├── Frontend/
+│   ├── src/
+│   │   ├── components/    # Reusable UI components (AppShell)
+│   │   ├── context/       # Global state management (ResearchContext)
+│   │   ├── pages/         # Application pages
+│   │   │   ├── AIChatPage.tsx
+│   │   │   ├── AuthPage.tsx
+│   │   │   ├── CollectionsPage.tsx
+│   │   │   ├── ComparePage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── HomePage.tsx
+│   │   │   ├── LandingPage.tsx
+│   │   │   ├── LibraryPage.tsx
+│   │   │   ├── LiteratureReviewPage.tsx
+│   │   │   ├── PaperDetailPage.tsx
+│   │   │   ├── SettingsPage.tsx
+│   │   │   └── UploadPage.tsx
+│   │   ├── App.tsx        # Router setup & route definitions
+│   │   ├── main.tsx
+│   │   └── styles.css     # Global CSS design system
+│   ├── package.json
+│   └── vite.config.ts
 └── README.md
 ```
 
-## Getting started
+---
 
-This repository is currently being prepared as a full-stack application. The next steps are to scaffold the frontend and backend, connect the database and vector store, and integrate an LLM for document summarization and question answering.
+## 🚀 Getting Started
 
-### Suggested setup flow
-1. Create the backend API for authentication, uploads, and document processing.
-2. Create the frontend experience for upload, dashboard, chat, and comparison views.
-3. Configure PostgreSQL with pgvector.
-4. Integrate an LLM and embedding model.
-5. Deploy the application to production.
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- *(Optional)* **Google Gemini API Key**: Obtain from [Google AI Studio](https://aistudio.google.com/) for live LLM responses.
 
-### Example local development commands
+---
 
+### Local Setup Instructions
+
+#### 1. Clone the Repository & Install Dependencies
+
+**Backend Setup:**
 ```bash
 cd Backend
 npm install
-npm run dev
 ```
 
+**Frontend Setup:**
 ```bash
 cd Frontend
 npm install
+```
+
+---
+
+#### 2. Environment Configuration
+
+Create a `.env` file in the `Backend/` directory:
+
+```env
+PORT=5000
+SESSION_SECRET=your-custom-session-secret
+GEMINI_API_KEY=your-google-gemini-api-key # Optional: Enables Gemini 2.5 Flash LLM
+```
+
+*(Note: If `GEMINI_API_KEY` is not set, the RAG engine seamlessly uses the Grounded Local RAG Synthesis engine).*
+
+---
+
+#### 3. Run Development Servers
+
+**Start Backend Server** (Runs on `http://localhost:5000`):
+```bash
+cd Backend
 npm run dev
 ```
 
-## Future roadmap
+**Start Frontend Application** (Runs on `http://localhost:3000` or `http://localhost:5173`):
+```bash
+cd Frontend
+npm run dev
+```
 
-- Implement authentication and user profiles
-- Add PDF upload and metadata extraction
-- Build vector search and RAG workflows
-- Add paper comparison and literature review generation
-- Introduce saved chat history and citation navigation
-- Deploy the full application to production
+---
 
-## Status
+## 🔬 How the RAG Pipeline Works
 
-Current status: Project planning and documentation phase.
+1. **Document Storage**: Uploaded or arXiv-imported papers are stored in SQLite with their titles, abstracts, authors, tags, and metadata.
+2. **Query Keyword Scoring**: When a question is submitted, `retrieveRelevantPapers()` in `rag.ts` tokenizes the input query and ranks stored papers based on field matches:
+   - **Exact Title Phrase**: $+10$ score
+   - **Title Token**: $+4$ score per token
+   - **Tag Token**: $+3$ score per token
+   - **Abstract Token**: $+2$ score per token
+   - **Author Token**: $+1$ score per token
+3. **Context Construction**: Top matching papers are aggregated into a grounded context payload.
+4. **AI Answer Generation**: Context is sent to **Gemini 2.5 Flash** (`gemini-2.5-flash`) via `@google/genai`.
+5. **Citations & Datasets**: The output includes explicit source citations and extracted dataset tags for complete transparency.
+

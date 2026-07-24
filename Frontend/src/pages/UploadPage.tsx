@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
+import { FileText, Loader2, Folder, Edit3 } from 'lucide-react';
 
 const UploadPage = () => {
   const navigate = useNavigate();
@@ -129,8 +130,8 @@ const UploadPage = () => {
             cursor: 'pointer'
           }}
         >
-          <div style={{ fontSize: '3.2rem', marginBottom: '1rem' }}>
-            {uploading ? '⚙️' : '📄'}
+          <div style={{ fontSize: '3.2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+            {uploading ? <Loader2 size={48} className="spin-anim" color="var(--accent-purple)" style={{ animation: 'spin 1s linear infinite' }} /> : <FileText size={48} color="var(--accent-purple)" />}
           </div>
 
           {uploading ? (
@@ -167,23 +168,23 @@ const UploadPage = () => {
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                 <button
                   className="primary-button"
-                  style={{ padding: '0.75rem 2rem' }}
+                  style={{ padding: '0.75rem 2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                   onClick={(e) => {
                     e.stopPropagation();
                     fileInputRef.current?.click();
                   }}
                 >
-                  📁 Select PDF File
+                  <Folder size={16} /> Select PDF File
                 </button>
                 <button
                   className="secondary-button"
-                  style={{ padding: '0.75rem 1.5rem' }}
+                  style={{ padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowManualForm(!showManualForm);
                   }}
                 >
-                  {showManualForm ? 'Hide Details Form' : '✏️ Add Metadata Manually'}
+                  <Edit3 size={16} /> {showManualForm ? 'Hide Details Form' : 'Add Metadata Manually'}
                 </button>
               </div>
             </>

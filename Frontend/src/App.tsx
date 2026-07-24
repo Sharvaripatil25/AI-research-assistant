@@ -24,7 +24,7 @@ const App = () => {
       <ResearchProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<LandingPage theme={theme} toggleTheme={toggleTheme} />} />
             <Route path="/login" element={<AuthPage theme={theme} toggleTheme={toggleTheme} />} />
             <Route path="/signup" element={<AuthPage theme={theme} toggleTheme={toggleTheme} />} />
             <Route
@@ -39,7 +39,8 @@ const App = () => {
                     <Route path="chat" element={<AIChatPage />} />
                     <Route path="compare" element={<ComparePage />} />
                     <Route path="review" element={<LiteratureReviewPage />} />
-                    <Route path="collections" element={<CollectionsPage />} />
+                    <Route path="search" element={<CollectionsPage />} />
+                    <Route path="collections" element={<Navigate to="/search" replace />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="*" element={<Navigate to="dashboard" replace />} />
                   </Routes>

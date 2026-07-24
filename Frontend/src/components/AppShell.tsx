@@ -1,6 +1,23 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
+import {
+  Home,
+  BookOpen,
+  MessageSquare,
+  Scale,
+  FileText,
+  Bookmark,
+  Settings,
+  Sun,
+  Moon,
+  Bell,
+  Sparkles,
+  ChevronDown,
+  ArrowRight,
+  LogOut,
+  Search
+} from 'lucide-react';
 
 type AppShellProps = {
   children: ReactNode;
@@ -8,15 +25,17 @@ type AppShellProps = {
   toggleTheme: () => void;
 };
 
-const navItems = [
-  { label: 'Home', path: '/dashboard', icon: '🏠' },
-  { label: 'Upload Paper', path: '/upload', icon: '📤' },
-  { label: 'Library', path: '/library', icon: '📚' },
-  { label: 'AI Chat', path: '/chat', icon: '💬' },
-  { label: 'Compare Papers', path: '/compare', icon: '⚖️' },
-  { label: 'Literature Review', path: '/review', icon: '📝' },
-  { label: 'Collections', path: '/collections', icon: '🔍' },
-  { label: 'Settings', path: '/settings', icon: '⚙️' }
+const primaryNavItems = [
+  { label: 'Home', path: '/dashboard', icon: Home },
+  { label: 'Library', path: '/library', icon: BookOpen },
+  { label: 'AI Chat', path: '/chat', icon: MessageSquare },
+  { label: 'Compare Papers', path: '/compare', icon: Scale },
+  { label: 'Literature Review', path: '/review', icon: FileText },
+  { label: 'Search', path: '/search', icon: Search }
+];
+
+const secondaryNavItems = [
+  { label: 'Settings', path: '/settings', icon: Settings }
 ];
 
 const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
@@ -27,7 +46,7 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      navigate('/collections');
+      navigate('/search');
     }
   };
 
@@ -51,138 +70,129 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <NavLink to="/" className="sidebar-brand">
-          <div className="brand-mark">✨</div>
+        <NavLink to="/dashboard" className="sidebar-brand" style={{ textDecoration: 'none' }}>
+          <div className="brand-mark">
+            <BookOpen size={20} />
+          </div>
           <div>
-            <p className="brand-title">AI Research</p>
-            <p className="brand-subtitle">Assistant</p>
+            <h1 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-main)', margin: 0, letterSpacing: '-0.01em' }}>
+              AI Research Assistant
+            </h1>
           </div>
         </NavLink>
 
         <nav className="sidebar-nav">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
+          {primaryNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.label}
+                to={item.path}
+                className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              >
+                <span className="nav-icon"><Icon size={18} /></span>
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ height: '1px', background: 'var(--border-color)', margin: '0.25rem 0' }} />
+
+          <nav className="sidebar-nav" style={{ marginTop: 0 }}>
+            {secondaryNavItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.label}
+                  to={item.path}
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                >
+                  <span className="nav-icon"><Icon size={18} /></span>
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
       </aside>
 
       <main className="content-area">
         <header className="topbar">
-          <div className="topbar-left">
-            <div className="search-bar">
-              <span>🔍</span>
-              <input
-                type="text"
-                placeholder="Search papers, chats, topics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-              />
-              <span className="search-shortcut" onClick={() => navigate('/collections')}>⌘K</span>
-            </div>
-          </div>
+          <div style={{ flex: 1 }} />
 
           <div className="topbar-right">
-            <button className="icon-btn" type="button" onClick={toggleTheme} title="Toggle theme">
-              {theme === 'dark' ? '☀️' : '🌙'}
+            <button className="icon-btn" type="button" onClick={toggleTheme} title="Toggle light/dark theme">
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button className="icon-btn" type="button" title="Notifications" onClick={() => alert('No new notifications')}>
-              🔔
+              <Bell size={18} />
               <span className="notification-dot" />
             </button>
 
-            {/* Clickable User Profile Chip */}
+            {/* User Profile Avatar */}
             <div style={{ position: 'relative' }} ref={menuRef}>
               <div
                 className="profile-chip"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 title="Account Profile & Actions"
               >
-                <div className="avatar">{user?.avatarInitials || 'DR'}</div>
-                <span className="profile-name">{user?.name || 'Dr. Researcher'}</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>▼</span>
+                <div className="avatar">{user?.avatarInitials || 'AS'}</div>
+                <ChevronDown size={14} color="var(--text-muted)" />
               </div>
 
-              {/* Profile Dropdown Menu */}
+              {/* User Dropdown Menu - User Info & Log Out only */}
               {showProfileMenu && (
                 <div
                   style={{
                     position: 'absolute',
-                    top: '120%',
+                    top: '125%',
                     right: 0,
-                    width: '260px',
-                    background: 'var(--sidebar-bg)',
-                    border: '1px solid var(--card-border-glow)',
+                    width: '240px',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: 'var(--radius-lg)',
-                    padding: '1rem',
-                    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)',
-                    backdropFilter: 'blur(20px)',
+                    padding: '0.85rem',
+                    boxShadow: 'var(--card-shadow)',
                     zIndex: 100
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem', paddingBottom: '0.85rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div className="avatar" style={{ width: '40px', height: '40px', fontSize: '1rem' }}>
-                      {user?.avatarInitials || 'DR'}
+                  {/* User Profile Info */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.65rem' }}>
+                    <div className="avatar" style={{ width: '38px', height: '38px', fontSize: '0.85rem' }}>
+                      {user?.avatarInitials || 'AS'}
                     </div>
                     <div style={{ overflow: 'hidden' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#fff', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        {user?.name || 'Dr. Researcher'}
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {user?.name || 'Sharvari Patil'}
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        {user?.email || 'researcher@domain.com'}
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {user?.email || 'sharvaripatil333@gmail.com'}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <button
-                      className="secondary-button"
-                      style={{ justifyContent: 'flex-start', border: 'none', background: 'transparent', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                      onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
-                    >
-                      ⚙️ Account Settings & Profile
-                    </button>
-                    <button
-                      className="secondary-button"
-                      style={{ justifyContent: 'flex-start', border: 'none', background: 'transparent', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                      onClick={() => { setShowProfileMenu(false); navigate('/library'); }}
-                    >
-                      📚 My Research Library
-                    </button>
-                    <button
-                      className="secondary-button"
-                      style={{ justifyContent: 'flex-start', border: 'none', background: 'transparent', padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                      onClick={toggleTheme}
-                    >
-                      {theme === 'dark' ? '☀️ Switch to Light Theme' : '🌙 Switch to Dark Theme'}
-                    </button>
-
-                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
-                      <button
-                        className="secondary-button"
-                        style={{
-                          width: '100%',
-                          justifyContent: 'flex-start',
-                          color: '#f87171',
-                          borderColor: 'rgba(239, 68, 68, 0.3)',
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          padding: '0.5rem 0.75rem',
-                          fontSize: '0.85rem'
-                        }}
-                        onClick={handleLogout}
-                      >
-                        🚪 Log Out
-                      </button>
-                    </div>
-                  </div>
+                  {/* Log Out Button */}
+                  <button
+                    className="secondary-button"
+                    style={{
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      color: '#ef4444',
+                      borderColor: 'rgba(239, 68, 68, 0.25)',
+                      background: 'rgba(239, 68, 68, 0.08)',
+                      padding: '0.5rem 0.75rem',
+                      fontSize: '0.82rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={15} color="#ef4444" />
+                    <span>Log Out</span>
+                  </button>
                 </div>
               )}
             </div>
