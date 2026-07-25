@@ -25,17 +25,13 @@ const LibraryPage = () => {
           <p>All your uploaded research papers in one place ({papers.length} total).</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          {papers.length > 0 ? (
+          {papers.length > 0 && (
             <button
               className="secondary-button"
               style={{ color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               onClick={() => { if (window.confirm('Clear all papers from workspace?')) clearAllPapers(); }}
             >
               <Trash2 size={14} /> Clear All
-            </button>
-          ) : (
-            <button className="secondary-button" onClick={resetToSamplePapers} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <RotateCcw size={14} /> Load Sample Papers
             </button>
           )}
           <button className="primary-button" onClick={() => navigate('/upload')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

@@ -27,56 +27,12 @@ const HomePage = () => {
     navigate('/chat');
   };
 
-  // Sample default papers if library is empty to match reference mockup
-  const displayPapers = papers.length > 0 ? papers : [
-    {
-      id: 'attention-is-all-you-need',
-      title: 'Attention Is All You Need',
-      authors: 'Vaswani et al., 2017',
-      category: 'Neural Networks',
-      timeAgo: '2 days ago'
-    },
-    {
-      id: 'efficientnet',
-      title: 'EfficientNet: Rethinking Model Scaling',
-      authors: 'Tan & Le, 2019',
-      category: 'Computer Vision',
-      timeAgo: '3 days ago'
-    },
-    {
-      id: 'gnn-survey',
-      title: 'A Survey on Graph Neural Networks',
-      authors: 'Zhou et al., 2020',
-      category: 'Graph ML',
-      timeAgo: '5 days ago'
-    },
-    {
-      id: 'rl-robotics',
-      title: 'Reinforcement Learning for Robotics',
-      authors: 'Kober et al., 2013',
-      category: 'Robotics',
-      timeAgo: '1 week ago'
-    },
-    {
-      id: 'bert',
-      title: 'BERT: Pre-training of Deep Bidirectional Transformers',
-      authors: 'Devlin et al., 2018',
-      category: 'NLP',
-      timeAgo: '1 week ago'
-    }
-  ];
-
-  // Sample default continue sessions to match reference mockup
-  const displayChats = chatSessions.length > 0 ? chatSessions.map((s, idx) => ({
+  const displayPapers = papers;
+  const displayChats = chatSessions.map((s, idx) => ({
     id: s.id,
     title: s.title,
-    timeAgo: idx === 0 ? '2 hours ago' : idx === 1 ? 'Yesterday' : `${idx + 1} days ago`
-  })) : [
-    { id: '1', title: 'What are the limitations of Transformer models?', timeAgo: '2 hours ago' },
-    { id: '2', title: 'Compare the performance of ResNet and EfficientNet.', timeAgo: 'Yesterday' },
-    { id: '3', title: 'Explain the methodology used in EfficientNet.', timeAgo: '2 days ago' },
-    { id: '4', title: 'How does attention mechanism work?', timeAgo: '3 days ago' }
-  ];
+    timeAgo: s.createdAt || (idx === 0 ? 'Today' : 'Recently')
+  }));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingBottom: '2rem' }}>
@@ -148,24 +104,35 @@ const HomePage = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {displayPapers.slice(0, 5).map((paper: any) => (
-              <div
-                key={paper.id}
-                className="recent-paper-row"
-                onClick={() => navigate('/library')}
-              >
-                <div className="pdf-icon-badge">
-                  <FileText size={16} color="#ef4444" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="paper-row-title">{paper.title}</div>
-                  <div className="paper-row-sub">
-                    {paper.authors} {paper.category ? `• ${paper.category}` : ''}
+            {displayPapers.length > 0 ? (
+              displayPapers.slice(0, 5).map((paper: any) => (
+                <div
+                  key={paper.id}
+                  className="recent-paper-row"
+                  onClick={() => navigate('/library')}
+                >
+                  <div className="pdf-icon-badge">
+                    <FileText size={16} color="#ef4444" />
                   </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="paper-row-title">{paper.title}</div>
+                    <div className="paper-row-sub">
+                      {paper.authors} {paper.publishedIn ? `• ${paper.publishedIn}` : ''}
+                    </div>
+                  </div>
+                  <div className="paper-row-time">{paper.year || 'Recent'}</div>
                 </div>
-                <div className="paper-row-time">{paper.timeAgo || 'Recent'}</div>
+              ))
+            ) : (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <BookOpen size={32} style={{ marginBottom: '0.5rem', opacity: 0.4 }} />
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>No papers uploaded yet</div>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.2rem', marginBottom: '1rem' }}>Add PDF papers or search arXiv to start building your library.</div>
+                <button className="primary-button" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }} onClick={() => navigate('/upload')}>
+                  + Upload Paper
+                </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -181,21 +148,32 @@ const HomePage = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {displayChats.slice(0, 5).map((chat: any) => (
-              <div
-                key={chat.id}
-                className="recent-paper-row"
-                onClick={() => navigate('/chat')}
-              >
-                <div className="chat-icon-badge">
-                  <MessageSquare size={16} color="var(--accent-purple)" />
+            {displayChats.length > 0 ? (
+              displayChats.slice(0, 5).map((chat: any) => (
+                <div
+                  key={chat.id}
+                  className="recent-paper-row"
+                  onClick={() => navigate('/chat')}
+                >
+                  <div className="chat-icon-badge">
+                    <MessageSquare size={16} color="var(--accent-purple)" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="paper-row-title">{chat.title}</div>
+                  </div>
+                  <div className="paper-row-time">{chat.timeAgo || 'Today'}</div>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="paper-row-title">{chat.title}</div>
-                </div>
-                <div className="paper-row-time">{chat.timeAgo || 'Today'}</div>
+              ))
+            ) : (
+              <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <MessageSquare size={32} style={{ marginBottom: '0.5rem', opacity: 0.4 }} />
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>No active chat sessions</div>
+                <div style={{ fontSize: '0.8rem', marginTop: '0.2rem', marginBottom: '1rem' }}>Ask a question above to start an AI research conversation.</div>
+                <button className="secondary-button" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }} onClick={() => navigate('/chat')}>
+                  Start New Chat
+                </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
