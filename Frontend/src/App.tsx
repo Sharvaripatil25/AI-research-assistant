@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ResearchProvider } from './context/ResearchContext';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
@@ -15,7 +15,15 @@ import CollectionsPage from './pages/CollectionsPage';
 import SettingsPage from './pages/SettingsPage';
 
 const App = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const savedTheme = localStorage.getItem('app_theme');
+    return (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('app_theme', theme);
+  }, [theme]);
+
   const toggleTheme = () => setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
   const themeClass = useMemo(() => (theme === 'dark' ? 'theme-dark' : 'theme-light'), [theme]);
 

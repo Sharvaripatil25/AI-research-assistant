@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch, Paper } from '../context/ResearchContext';
 import { Search, BookOpen, Globe, FileText, Plus, Check, ArrowRight, Loader2 } from 'lucide-react';
+import { API_URL } from '../config';
 
 interface WebPaper {
   id: string;
@@ -46,7 +47,7 @@ const CollectionsPage = () => {
     setIsSearchingWeb(true);
 
     const timer = setTimeout(() => {
-      fetch(`http://localhost:5000/api/search-web?q=${encodeURIComponent(queryToSearch)}`)
+      fetch(`${API_URL}/search-web?q=${encodeURIComponent(queryToSearch)}`)
         .then(res => res.json())
         .then(data => {
           if (data && Array.isArray(data.papers)) {

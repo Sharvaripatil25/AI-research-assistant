@@ -82,11 +82,6 @@ const HomePage = () => {
               <ArrowRight size={16} color="#fff" />
             </button>
           </div>
-          <div className="try-hint-text">
-            Try: <span className="hint-clickable" onClick={() => handleAskQuestion('What are the limitations of Transformer models?')}>
-              "What are the limitations of Transformer models?"
-            </span>
-          </div>
         </div>
       </div>
 

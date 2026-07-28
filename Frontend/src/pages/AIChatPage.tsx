@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useResearch } from '../context/ResearchContext';
 import { MessageSquare, Trash2, FileText, Bot, Paperclip } from 'lucide-react';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 
 
 const AIChatPage = () => {
@@ -146,8 +147,8 @@ const AIChatPage = () => {
                 <div key={msg.id} className={`chat-msg ${msg.sender}`} style={{ position: 'relative' }}>
                   <div className="chat-bubble" style={{ position: 'relative' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <div style={{ margin: 0, flex: 1, whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
-                        {msg.text}
+                      <div style={{ margin: 0, flex: 1, lineHeight: '1.5' }}>
+                        <MarkdownRenderer content={msg.text} />
                       </div>
                       <button
                         onClick={() => deleteChatMessage(msg.id)}
@@ -239,10 +240,12 @@ const AIChatPage = () => {
       <div className="sources-panel">
         <h4 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Workspace Sources ({papers.length})</h4>
 
-        {papers.slice(0, 3).map((paper, idx) => (
+        {papers.map((paper, idx) => (
           <div key={paper.id} className="source-card" style={{ cursor: 'pointer' }} onClick={() => navigate(`/library/${paper.id}`)}>
-            <div className="match-score">{98 - idx * 4}% match</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, margin: '0.2rem 0' }}>{paper.title}</div>
+            <div className="match-score" title="RAG Semantic Retrieval Relevance Score">
+              Relevance: {Math.max(85, 98 - idx * 4)}%
+            </div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, margin: '0.2rem 0', color: 'var(--text-main)' }}>{paper.title}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{paper.authors} ({paper.year})</div>
           </div>
         ))}

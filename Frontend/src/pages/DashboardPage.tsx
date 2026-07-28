@@ -7,7 +7,7 @@ type DashboardPageProps = {
   toggleTheme: () => void;
 };
 
-const API_URL = 'http://localhost:5000';
+import { API_SERVER_URL as API_URL } from '../config';
 
 type PaperItem = {
   id: number;

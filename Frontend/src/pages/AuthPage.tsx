@@ -3,8 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useResearch } from '../context/ResearchContext';
 import { BookOpen, FileText, Scale, Sun, Moon, Sparkles } from 'lucide-react';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config';
 
 type AuthPageProps = {
   theme: 'light' | 'dark';

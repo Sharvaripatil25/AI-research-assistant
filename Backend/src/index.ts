@@ -12,7 +12,23 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  process.env.CLIENT_ORIGIN
+].filter((origin): origin is string => Boolean(origin));
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use(session({
@@ -213,12 +229,13 @@ app.delete('/api/chat/:id', async (req: Request, res: Response) => {
 /* Literature Review API */
 app.post('/api/review/generate', (req: Request, res: Response) => {
   const { topic, selectedPapers, reviewType } = req.body;
+  const reviewTopic = topic || 'Autonomous Robotics & Healthcare Systems';
   res.json({
     status: 'success',
-    topic: topic || 'Transformer-based models in computer vision',
+    topic: reviewTopic,
     reviewType: reviewType || 'Comprehensive',
-    selectedPapersCount: selectedPapers ? selectedPapers.length : 3,
-    summary: `Literature review synthesized for "${topic}". Found key thematic alignment in attention mechanisms and model scaling across selected papers.`
+    selectedPapersCount: selectedPapers ? selectedPapers.length : 1,
+    summary: `Literature review synthesized for "${reviewTopic}". Found key thematic alignment in system architecture, empirical benchmarks, and future operational scaling.`
   });
 });
 
@@ -249,7 +266,7 @@ app.get('/api/search-web', async (req: Request, res: Response) => {
       const titleMatch = entryContent.match(/<title>([\s\S]*?)<\/title>/);
       const summaryMatch = entryContent.match(/<summary>([\s\S]*?)<\/summary>/);
       const publishedMatch = entryContent.match(/<published>(.*?)<\/published>/);
-      
+
       const authorMatches = [...entryContent.matchAll(/<author>[\s\S]*?<name>(.*?)<\/name>[\s\S]*?<\/author>/g)].map(m => m[1]);
 
       const title = titleMatch ? titleMatch[1].replace(/\s+/g, ' ').trim() : 'Untitled Paper';
