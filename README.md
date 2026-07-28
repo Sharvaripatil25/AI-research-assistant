@@ -1,4 +1,4 @@
-# AI Research Assistant 🔬
+# ResearchPulse-AI Research Assistant 🔬
 
 AI Research Assistant is a full-stack, AI-powered academic research platform designed for researchers, students, and engineers. It allows users to store academic papers, perform **Retrieval-Augmented Generation (RAG)** over their personal paper library using **Google Gemini 2.5 Flash**, search live **arXiv preprints**, compare model methodologies side-by-side, and synthesize automated literature reviews.
 
