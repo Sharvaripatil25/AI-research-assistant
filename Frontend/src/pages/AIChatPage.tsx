@@ -72,18 +72,30 @@ const AIChatPage = () => {
                       e.stopPropagation();
                       deleteChatSession(session.id);
                     }}
-                    title="Delete this chat"
+                    title="Delete chat"
                     style={{
-                      background: 'none',
+                      background: 'transparent',
                       border: 'none',
-                      color: '#f87171',
+                      color: 'var(--text-muted)',
                       cursor: 'pointer',
-                      fontSize: '0.75rem',
-                      opacity: 0.7,
-                      padding: '2px 4px'
+                      padding: '3px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0.6,
+                      transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.color = '#ef4444';
+                      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.6';
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                      e.currentTarget.style.background = 'transparent';
+                    }}
                   >
                     <Trash2 size={13} />
                   </button>
@@ -104,7 +116,7 @@ const AIChatPage = () => {
             alignItems: 'center',
             paddingBottom: '0.85rem',
             marginBottom: '0.85rem',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+            borderBottom: '1px solid var(--border-color)'
           }}
         >
           <div>
@@ -119,23 +131,32 @@ const AIChatPage = () => {
           {activeSessionId && chatMessages.length > 0 && (
             <button
               onClick={() => deleteChatSession(activeSessionId)}
-              title="Delete current chat"
+              title="Delete current conversation"
               style={{
-                background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: '#f87171',
-                borderRadius: '8px',
-                padding: '0.4rem 0.75rem',
-                fontSize: '0.8rem',
+                background: 'transparent',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#ef4444',
+                borderRadius: 'var(--radius-full, 9999px)',
+                padding: '0.35rem 0.8rem',
+                fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.3rem',
+                gap: '0.4rem',
                 transition: 'all 0.2s ease'
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.borderColor = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+              }}
             >
-              🗑️ Delete Chat
+              <Trash2 size={14} color="#ef4444" />
+              <span>Delete Chat</span>
             </button>
           )}
         </div>
@@ -144,38 +165,18 @@ const AIChatPage = () => {
           {chatMessages.length > 0 ? (
             <>
               {chatMessages.map((msg) => (
-                <div key={msg.id} className={`chat-msg ${msg.sender}`} style={{ position: 'relative' }}>
-                  <div className="chat-bubble" style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <div style={{ margin: 0, flex: 1, lineHeight: '1.5' }}>
-                        <MarkdownRenderer content={msg.text} />
-                      </div>
-                      <button
-                        onClick={() => deleteChatMessage(msg.id)}
-                        title="Delete message"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--text-muted)',
-                          cursor: 'pointer',
-                          fontSize: '0.75rem',
-                          opacity: 0.6,
-                          padding: '0 2px',
-                          transition: 'opacity 0.2s'
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
-                      >
-                        ✕
-                      </button>
+                <div key={msg.id} className={`chat-msg ${msg.sender}`}>
+                  <div className="chat-bubble">
+                    <div style={{ margin: 0, lineHeight: '1.5' }}>
+                      <MarkdownRenderer content={msg.text} />
                     </div>
 
                     {msg.datasets && msg.datasets.length > 0 && (
                       <div style={{ marginTop: '0.6rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>Extracted Datasets:</span>
+                        <span style={{ fontSize: '0.75rem', opacity: 0.85, fontWeight: 600 }}>Extracted Datasets:</span>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.25rem' }}>
                           {msg.datasets.map((d, i) => (
-                            <span key={i} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#c084fc', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>
+                            <span key={i} style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent-purple)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600 }}>
                               📊 {d}
                             </span>
                           ))}
@@ -184,8 +185,8 @@ const AIChatPage = () => {
                     )}
 
                     {msg.sources && msg.sources.length > 0 && (
-                      <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.3rem', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>Sources:</span>
+                      <div style={{ marginTop: '0.65rem', display: 'flex', flexWrap: 'wrap', gap: '0.3rem', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', opacity: 0.85, fontWeight: 600 }}>Sources:</span>
                         {msg.sources.map((s, i) => (
                           <span key={i} className="citation-chip" onClick={() => navigate('/library')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                             <FileText size={12} /> {s}

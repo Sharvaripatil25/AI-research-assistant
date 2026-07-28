@@ -25,6 +25,7 @@ export interface PaperRecord {
   uploadDate: string;
   pages?: string;
   doi?: string;
+  userEmail?: string;
 }
 
 export interface ChatMessageRecord {
@@ -35,6 +36,7 @@ export interface ChatMessageRecord {
   timestamp: string;
   datasets: string;
   sources: string;
+  userEmail?: string;
 }
 
 export interface UserRecord {
@@ -110,7 +112,8 @@ export const initializeDatabase = async (): Promise<void> => {
       citations INTEGER,
       uploadDate TEXT,
       pages TEXT,
-      doi TEXT
+      doi TEXT,
+      userEmail TEXT
     );
   `);
   await runAsync(`
@@ -121,13 +124,22 @@ export const initializeDatabase = async (): Promise<void> => {
       text TEXT NOT NULL,
       timestamp TEXT NOT NULL,
       datasets TEXT,
-      sources TEXT
+      sources TEXT,
+      userEmail TEXT
     );
   `);
+
+  // Safely attempt adding userEmail column to existing databases
+  try { await runAsync('ALTER TABLE papers ADD COLUMN userEmail TEXT'); } catch {}
+  try { await runAsync('ALTER TABLE chat_messages ADD COLUMN userEmail TEXT'); } catch {}
 };
 
-export const clearAllPapersFromDb = async (): Promise<void> => {
-  await runAsync('DELETE FROM papers');
+export const clearAllPapersFromDb = async (userEmail?: string): Promise<void> => {
+  if (userEmail) {
+    await runAsync('DELETE FROM papers WHERE userEmail = ?', [userEmail]);
+  } else {
+    await runAsync('DELETE FROM papers');
+  }
 };
 
 export const findUserByEmail = async (email: string): Promise<UserRecord | undefined> => {
@@ -139,7 +151,10 @@ export const createUser = async (email: string, passwordHash: string): Promise<U
   return { id: Number(info.lastID), email, passwordHash };
 };
 
-export const getAllPapers = async (): Promise<PaperRecord[]> => {
+export const getAllPapers = async (userEmail?: string): Promise<PaperRecord[]> => {
+  if (userEmail) {
+    return allAsync<PaperRecord>('SELECT * FROM papers WHERE userEmail = ? ORDER BY uploadDate DESC', [userEmail]);
+  }
   return allAsync<PaperRecord>('SELECT * FROM papers ORDER BY uploadDate DESC');
 };
 
@@ -149,25 +164,32 @@ export const getPaperById = async (id: string): Promise<PaperRecord | undefined>
 
 export const addPaper = async (paper: PaperRecord): Promise<PaperRecord> => {
   await runAsync(`
-    INSERT INTO papers (id, title, authors, year, publishedIn, abstract, tags, citations, uploadDate, pages, doi)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `, [paper.id, paper.title, paper.authors, paper.year, paper.publishedIn, paper.abstract, paper.tags, paper.citations, paper.uploadDate, paper.pages, paper.doi]);
+    INSERT OR REPLACE INTO papers (id, title, authors, year, publishedIn, abstract, tags, citations, uploadDate, pages, doi, userEmail)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [paper.id, paper.title, paper.authors, paper.year, paper.publishedIn, paper.abstract, paper.tags, paper.citations, paper.uploadDate, paper.pages, paper.doi, paper.userEmail || null]);
   return paper;
 };
 
-export const deletePaperById = async (id: string): Promise<void> => {
-  await runAsync('DELETE FROM papers WHERE id = ?', [id]);
+export const deletePaperById = async (id: string, userEmail?: string): Promise<void> => {
+  if (userEmail) {
+    await runAsync('DELETE FROM papers WHERE id = ? AND userEmail = ?', [id, userEmail]);
+  } else {
+    await runAsync('DELETE FROM papers WHERE id = ?', [id]);
+  }
 };
 
-export const getChatHistory = async (): Promise<ChatMessageRecord[]> => {
+export const getChatHistory = async (userEmail?: string): Promise<ChatMessageRecord[]> => {
+  if (userEmail) {
+    return allAsync<ChatMessageRecord>('SELECT * FROM chat_messages WHERE userEmail = ? ORDER BY id ASC', [userEmail]);
+  }
   return allAsync<ChatMessageRecord>('SELECT * FROM chat_messages ORDER BY id ASC');
 };
 
 export const addChatMessage = async (message: ChatMessageRecord): Promise<ChatMessageRecord> => {
   await runAsync(`
-    INSERT INTO chat_messages (id, sessionId, sender, text, timestamp, datasets, sources)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [message.id, message.sessionId || 'default', message.sender, message.text, message.timestamp, message.datasets, message.sources]);
+    INSERT INTO chat_messages (id, sessionId, sender, text, timestamp, datasets, sources, userEmail)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `, [message.id, message.sessionId || 'default', message.sender, message.text, message.timestamp, message.datasets, message.sources, message.userEmail || null]);
   return message;
 };
 
@@ -175,11 +197,19 @@ export const deleteChatMessageById = async (id: string): Promise<void> => {
   await runAsync('DELETE FROM chat_messages WHERE id = ?', [id]);
 };
 
-export const deleteChatSession = async (sessionId: string): Promise<void> => {
-  await runAsync('DELETE FROM chat_messages WHERE sessionId = ? OR id = ?', [sessionId, sessionId]);
+export const deleteChatSession = async (sessionId: string, userEmail?: string): Promise<void> => {
+  if (userEmail) {
+    await runAsync('DELETE FROM chat_messages WHERE (sessionId = ? OR id = ?) AND userEmail = ?', [sessionId, sessionId, userEmail]);
+  } else {
+    await runAsync('DELETE FROM chat_messages WHERE sessionId = ? OR id = ?', [sessionId, sessionId]);
+  }
 };
 
-export const clearAllChatHistory = async (): Promise<void> => {
-  await runAsync('DELETE FROM chat_messages');
+export const clearAllChatHistory = async (userEmail?: string): Promise<void> => {
+  if (userEmail) {
+    await runAsync('DELETE FROM chat_messages WHERE userEmail = ?', [userEmail]);
+  } else {
+    await runAsync('DELETE FROM chat_messages');
+  }
 };
 

@@ -94,9 +94,22 @@ app.get('/api/auth/me', authMiddleware, (req: Request, res: Response) => {
   res.json({ user: (req as Request & { user?: { id: number; email: string } }).user });
 });
 
+const getUserEmailFromReq = (req: Request): string | undefined => {
+  const headerEmail = req.headers['x-user-email'];
+  if (typeof headerEmail === 'string' && headerEmail.trim()) {
+    return headerEmail.toLowerCase().trim();
+  }
+  const queryEmail = req.query.userEmail;
+  if (typeof queryEmail === 'string' && queryEmail.trim()) {
+    return queryEmail.toLowerCase().trim();
+  }
+  return undefined;
+};
+
 /* Papers API */
-app.get('/api/papers', async (_req: Request, res: Response) => {
-  const papers = await getAllPapers();
+app.get('/api/papers', async (req: Request, res: Response) => {
+  const userEmail = getUserEmailFromReq(req);
+  const papers = await getAllPapers(userEmail);
   res.json({ papers, total: papers.length });
 });
 
@@ -116,6 +129,7 @@ app.post('/api/papers', async (req: Request, res: Response) => {
     res.status(400).json({ message: 'Title is required' });
     return;
   }
+  const userEmail = getUserEmailFromReq(req);
 
   const newPaper = {
     id: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -128,27 +142,31 @@ app.post('/api/papers', async (req: Request, res: Response) => {
     citations: 0,
     uploadDate: new Date().toISOString(),
     pages,
-    doi
+    doi,
+    userEmail
   };
 
   const paper = await addPaper(newPaper);
   res.status(201).json({ message: 'Paper uploaded successfully', paper });
 });
 
-app.delete('/api/papers', async (_req: Request, res: Response) => {
-  await clearAllPapersFromDb();
+app.delete('/api/papers', async (req: Request, res: Response) => {
+  const userEmail = getUserEmailFromReq(req);
+  await clearAllPapersFromDb(userEmail);
   res.json({ message: 'All papers deleted successfully' });
 });
 
 app.delete('/api/papers/:id', async (req: Request, res: Response) => {
   const paperId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  await deletePaperById(paperId);
+  const userEmail = getUserEmailFromReq(req);
+  await deletePaperById(paperId, userEmail);
   res.json({ message: 'Paper deleted successfully' });
 });
 
 /* AI Chat API */
-app.get('/api/chat', async (_req: Request, res: Response) => {
-  const messages = await getChatHistory();
+app.get('/api/chat', async (req: Request, res: Response) => {
+  const userEmail = getUserEmailFromReq(req);
+  const messages = await getChatHistory(userEmail);
   res.json({ messages });
 });
 
@@ -159,6 +177,7 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     return;
   }
 
+  const userEmail = getUserEmailFromReq(req);
   const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const userMsg: ChatMessage = {
@@ -175,16 +194,17 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     text: userMsg.text,
     timestamp: userMsg.timestamp,
     datasets: JSON.stringify([]),
-    sources: JSON.stringify([])
+    sources: JSON.stringify([]),
+    userEmail
   });
 
-  // 1. Fetch all library papers from database
-  const allPapers = await getAllPapers();
+  // 1. Fetch library papers scoped for current user
+  const userPapers = await getAllPapers(userEmail);
 
   // 2. Perform RAG retrieval ranking
-  const relevantPapers = retrieveRelevantPapers(message, allPapers);
+  const relevantPapers = retrieveRelevantPapers(message, userPapers);
 
-  // 3. Generate RAG answer (via Gemini API or Grounded Local RAG Synthesis)
+  // 3. Generate RAG answer
   const ragResult = await generateRAGResponse(message, relevantPapers);
 
   const assistantMsg: ChatMessage = {
@@ -203,20 +223,23 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     text: assistantMsg.text,
     timestamp: assistantMsg.timestamp,
     datasets: JSON.stringify(ragResult.datasets || []),
-    sources: JSON.stringify(ragResult.sources || [])
+    sources: JSON.stringify(ragResult.sources || []),
+    userEmail
   });
 
   res.status(201).json({ userMessage: userMsg, assistantMessage: assistantMsg });
 });
 
-app.delete('/api/chat', async (_req: Request, res: Response) => {
-  await clearAllChatHistory();
+app.delete('/api/chat', async (req: Request, res: Response) => {
+  const userEmail = getUserEmailFromReq(req);
+  await clearAllChatHistory(userEmail);
   res.json({ message: 'Chat history cleared successfully' });
 });
 
 app.delete('/api/chat/session/:sessionId', async (req: Request, res: Response) => {
   const sessionId = Array.isArray(req.params.sessionId) ? req.params.sessionId[0] : req.params.sessionId;
-  await deleteChatSession(sessionId);
+  const userEmail = getUserEmailFromReq(req);
+  await deleteChatSession(sessionId, userEmail);
   res.json({ message: 'Chat session deleted successfully' });
 });
 

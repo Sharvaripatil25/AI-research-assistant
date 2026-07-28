@@ -65,6 +65,10 @@ export interface RAGResult {
  * RAG Generator: Calls Google Gemini API if GEMINI_API_KEY is available,
  * otherwise performs grounded local context synthesis over retrieved papers.
  */
+export const generateRAGResponse = async (
+  userQuery: string,
+  retrievedPapers: PaperRecord[]
+): Promise<RAGResult> => {
   const sources = retrievedPapers.map((p) => p.title);
   
   // Extract potential datasets mentioned in retrieved papers

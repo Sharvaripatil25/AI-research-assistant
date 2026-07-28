@@ -27,7 +27,20 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
     setMessage('');
     setIsLoading(false);
 
-    const displayName = name.trim() || email.split('@')[0] || 'Researcher';
+    // Look up if this user email has a previously saved custom profile
+    const profileKey = `user_profile_${(email || '').toLowerCase()}`;
+    const savedProfileStr = localStorage.getItem(profileKey);
+    let displayName = name.trim();
+    if (!displayName && savedProfileStr) {
+      try {
+        const parsed = JSON.parse(savedProfileStr);
+        if (parsed.name) displayName = parsed.name;
+      } catch { }
+    }
+    if (!displayName) {
+      displayName = email.split('@')[0] || 'Researcher';
+    }
+
     const initials = displayName
       .split(' ')
       .filter(Boolean)

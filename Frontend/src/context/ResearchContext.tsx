@@ -37,12 +37,15 @@ export interface UserProfile {
   name: string;
   avatarInitials: string;
   plan?: string;
+  institution?: string;
+  researchField?: string;
 }
 
 interface ResearchContextType {
   user: UserProfile | null;
   setUser: (user: UserProfile | null) => void;
   updateUserName: (name: string) => void;
+  updateUserProfile: (data: { name?: string; institution?: string; researchField?: string }) => void;
   logout: () => void;
   papers: Paper[];
   addPaper: (paper: Omit<Paper, 'id' | 'citations' | 'uploadDate'>) => void;
@@ -67,51 +70,101 @@ interface ResearchContextType {
   setSearchQuery: (query: string) => void;
 }
 
-
 const ResearchContext = createContext<ResearchContextType | undefined>(undefined);
 
 export const ResearchProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUserState] = useState<UserProfile | null>(() => {
     const savedUser = localStorage.getItem('research_user');
     if (savedUser) {
-      try { return JSON.parse(savedUser); } catch { }
+      try {
+        return JSON.parse(savedUser);
+      } catch { }
     }
-    return {
-      email: 'researcher@domain.com',
-      name: 'Dr. Researcher',
-      avatarInitials: 'DR'
-    };
+    return null;
   });
 
   const setUser = (newUser: UserProfile | null) => {
     if (newUser) {
-      setUserState(newUser);
-      localStorage.setItem('research_user', JSON.stringify(newUser));
+      const emailKey = (newUser.email || '').toLowerCase().trim();
+      const profileKey = emailKey ? `user_profile_${emailKey}` : 'user_profile_guest';
+      const savedProfile = localStorage.getItem(profileKey);
+
+      let mergedUser: UserProfile = {
+        email: newUser.email,
+        name: newUser.name || (newUser.email ? newUser.email.split('@')[0] : 'Researcher'),
+        avatarInitials: newUser.avatarInitials || (newUser.name ? newUser.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase() : 'U'),
+        institution: newUser.institution || '',
+        researchField: newUser.researchField || ''
+      };
+
+      if (savedProfile) {
+        try {
+          const parsed = JSON.parse(savedProfile);
+          mergedUser = {
+            ...mergedUser,
+            name: (parsed.name && parsed.name !== 'Researcher') ? parsed.name : mergedUser.name,
+            institution: parsed.institution !== undefined ? parsed.institution : mergedUser.institution,
+            researchField: parsed.researchField !== undefined ? parsed.researchField : mergedUser.researchField,
+            avatarInitials: parsed.avatarInitials || mergedUser.avatarInitials
+          };
+        } catch { }
+      }
+
+      setUserState(mergedUser);
+      localStorage.setItem('research_user', JSON.stringify(mergedUser));
+      if (emailKey) {
+        localStorage.setItem(profileKey, JSON.stringify(mergedUser));
+      }
     } else {
       localStorage.removeItem('research_user');
       localStorage.removeItem('token');
+      localStorage.removeItem('pref_name');
+      localStorage.removeItem('pref_institution');
+      localStorage.removeItem('pref_field');
+      localStorage.removeItem('user_email');
       setUserState(null);
     }
   };
 
-  const updateUserName = (name: string) => {
-    const initials = name
+  const updateUserProfile = (data: { name?: string; institution?: string; researchField?: string }) => {
+    if (!user) return;
+    const emailKey = (user.email || '').toLowerCase().trim();
+    const profileKey = emailKey ? `user_profile_${emailKey}` : 'user_profile_guest';
+
+    const newName = data.name !== undefined ? data.name.trim() : user.name;
+    const initials = newName
       .split(' ')
       .filter(Boolean)
       .map(part => part[0].toUpperCase())
       .slice(0, 2)
       .join('') || 'U';
 
-    if (user) {
-      const updated = { ...user, name, avatarInitials: initials };
-      setUserState(updated);
-      localStorage.setItem('research_user', JSON.stringify(updated));
+    const updated: UserProfile = {
+      ...user,
+      name: newName || (user.email ? user.email.split('@')[0] : 'Researcher'),
+      avatarInitials: initials,
+      institution: data.institution !== undefined ? data.institution.trim() : (user.institution || ''),
+      researchField: data.researchField !== undefined ? data.researchField.trim() : (user.researchField || '')
+    };
+
+    setUserState(updated);
+    localStorage.setItem('research_user', JSON.stringify(updated));
+    if (emailKey) {
+      localStorage.setItem(profileKey, JSON.stringify(updated));
     }
+  };
+
+  const updateUserName = (name: string) => {
+    updateUserProfile({ name });
   };
 
   const logout = () => {
     localStorage.removeItem('research_user');
     localStorage.removeItem('token');
+    localStorage.removeItem('pref_name');
+    localStorage.removeItem('pref_institution');
+    localStorage.removeItem('pref_field');
+    localStorage.removeItem('user_email');
     setUserState(null);
   };
 
@@ -184,9 +237,25 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
       abstract
     };
   };
+  const getUserStorageKey = (prefix: string) => {
+    const emailKey = user?.email ? user.email.toLowerCase().trim() : 'guest';
+    return `${prefix}_${emailKey}`;
+  };
+
+  const getAuthHeaders = () => {
+    return user?.email ? { headers: { 'x-user-email': user.email.toLowerCase().trim() } } : {};
+  };
 
   const [papers, setPapers] = useState<Paper[]>(() => {
-    const savedPapers = localStorage.getItem('research_papers');
+    const savedUser = localStorage.getItem('research_user');
+    let email = 'guest';
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.email) email = parsedUser.email.toLowerCase().trim();
+      } catch { }
+    }
+    const savedPapers = localStorage.getItem(`research_papers_${email}`);
     if (savedPapers) {
       try {
         const parsed = JSON.parse(savedPapers);
@@ -199,7 +268,15 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
-    const saved = localStorage.getItem('research_chat_sessions');
+    const savedUser = localStorage.getItem('research_user');
+    let email = 'guest';
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.email) email = parsedUser.email.toLowerCase().trim();
+      } catch { }
+    }
+    const saved = localStorage.getItem(`research_chat_sessions_${email}`);
     if (saved) {
       try { return JSON.parse(saved); } catch { }
     }
@@ -207,7 +284,15 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [activeSessionId, setActiveSessionId] = useState<string | null>(() => {
-    const savedSessions = localStorage.getItem('research_chat_sessions');
+    const savedUser = localStorage.getItem('research_user');
+    let email = 'guest';
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.email) email = parsedUser.email.toLowerCase().trim();
+      } catch { }
+    }
+    const savedSessions = localStorage.getItem(`research_chat_sessions_${email}`);
     if (savedSessions) {
       try {
         const parsed: ChatSession[] = JSON.parse(savedSessions);
@@ -221,29 +306,66 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
   const chatMessages = activeSession ? activeSession.messages : [];
 
   const [comparedPaperIds, setComparedPaperIds] = useState<string[]>([]);
-
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Persist papers to localStorage
+  // Re-load and sync user-specific papers and chat sessions whenever user changes
   useEffect(() => {
-    localStorage.setItem('research_papers', JSON.stringify(papers));
-  }, [papers]);
+    const currentEmail = user?.email ? user.email.toLowerCase().trim() : 'guest';
 
-  // Persist chat sessions to localStorage
-  useEffect(() => {
-    localStorage.setItem('research_chat_sessions', JSON.stringify(chatSessions));
-  }, [chatSessions]);
+    const paperKey = `research_papers_${currentEmail}`;
+    const chatKey = `research_chat_sessions_${currentEmail}`;
 
-  // Sync papers from backend API on mount & sanitize
+    const savedPapers = localStorage.getItem(paperKey);
+    if (savedPapers) {
+      try {
+        const parsed = JSON.parse(savedPapers);
+        setPapers(parsed.map(sanitizePaper));
+      } catch {
+        setPapers([]);
+      }
+    } else {
+      setPapers([]);
+    }
+
+    const savedChat = localStorage.getItem(chatKey);
+    if (savedChat) {
+      try {
+        const parsed: ChatSession[] = JSON.parse(savedChat);
+        setChatSessions(parsed);
+        setActiveSessionId(parsed.length > 0 ? parsed[0].id : null);
+      } catch {
+        setChatSessions([]);
+        setActiveSessionId(null);
+      }
+    } else {
+      setChatSessions([]);
+      setActiveSessionId(null);
+    }
+    setComparedPaperIds([]);
+
+    // Fetch backend papers for this user if logged in
+    if (user?.email) {
+      axios.get(`${API_URL}/papers`, getAuthHeaders())
+        .then(res => {
+          if (res.data && Array.isArray(res.data.papers)) {
+            setPapers(res.data.papers.map(sanitizePaper));
+          }
+        })
+        .catch(() => { });
+    }
+  }, [user?.email]);
+
+  // Persist papers to per-user localStorage
   useEffect(() => {
-    axios.get(`${API_URL}/papers`)
-      .then(res => {
-        if (res.data && Array.isArray(res.data.papers) && res.data.papers.length > 0) {
-          setPapers(res.data.papers.map(sanitizePaper));
-        }
-      })
-      .catch(() => {});
-  }, []);
+    const key = getUserStorageKey('research_papers');
+    localStorage.setItem(key, JSON.stringify(papers));
+  }, [papers, user?.email]);
+
+  // Persist chat sessions to per-user localStorage
+  useEffect(() => {
+    const key = getUserStorageKey('research_chat_sessions');
+    localStorage.setItem(key, JSON.stringify(chatSessions));
+  }, [chatSessions, user?.email]);
 
   const addPaper = (newPaperData: Omit<Paper, 'id' | 'citations' | 'uploadDate'>) => {
     const id = newPaperData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -254,13 +376,13 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
       uploadDate: new Date().toISOString()
     };
     setPapers(prev => [newPaper, ...prev]);
-    axios.post(`${API_URL}/papers`, newPaperData).catch(() => { });
+    axios.post(`${API_URL}/papers`, newPaperData, getAuthHeaders()).catch(() => { });
   };
 
   const deletePaper = (id: string) => {
     setPapers(prev => prev.filter(p => p.id !== id));
     setComparedPaperIds(prev => prev.filter(pId => pId !== id));
-    axios.delete(`${API_URL}/papers/${id}`).catch(() => { });
+    axios.delete(`${API_URL}/papers/${id}`, getAuthHeaders()).catch(() => { });
   };
 
   const clearAllPapers = () => {
@@ -268,16 +390,19 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     setComparedPaperIds([]);
     setChatSessions([]);
     setActiveSessionId(null);
-    localStorage.removeItem('research_papers');
-    localStorage.removeItem('research_chat_sessions');
-    axios.delete(`${API_URL}/papers`).catch(() => { });
-    axios.delete(`${API_URL}/chat`).catch(() => { });
+    const paperKey = getUserStorageKey('research_papers');
+    const chatKey = getUserStorageKey('research_chat_sessions');
+    localStorage.removeItem(paperKey);
+    localStorage.removeItem(chatKey);
+    axios.delete(`${API_URL}/papers`, getAuthHeaders()).catch(() => { });
+    axios.delete(`${API_URL}/chat`, getAuthHeaders()).catch(() => { });
   };
 
   const resetToSamplePapers = () => {
     setPapers([]);
     setComparedPaperIds([]);
-    localStorage.removeItem('research_papers');
+    const paperKey = getUserStorageKey('research_papers');
+    localStorage.removeItem(paperKey);
   };
 
   const [isTyping, setIsTyping] = useState(false);
@@ -325,7 +450,7 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     setIsTyping(true);
 
     try {
-      const response = await axios.post(`${API_URL}/chat`, { message: text, sessionId: currentSessionId });
+      const response = await axios.post(`${API_URL}/chat`, { message: text, sessionId: currentSessionId }, getAuthHeaders());
       const { assistantMessage } = response.data;
 
       const assistantMsg: ChatMessage = {
@@ -419,7 +544,7 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
         return s;
       })
     );
-    axios.delete(`${API_URL}/chat/${id}`).catch(() => { });
+    axios.delete(`${API_URL}/chat/${id}`, getAuthHeaders()).catch(() => { });
   };
 
   const deleteChatSession = (sessionId: string) => {
@@ -430,7 +555,7 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
       }
       return filtered;
     });
-    axios.delete(`${API_URL}/chat/session/${sessionId}`).catch(() => { });
+    axios.delete(`${API_URL}/chat/session/${sessionId}`, getAuthHeaders()).catch(() => { });
   };
 
   const clearChatHistory = () => {
@@ -439,8 +564,9 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setChatSessions([]);
       setActiveSessionId(null);
-      localStorage.removeItem('research_chat_sessions');
-      axios.delete(`${API_URL}/chat`).catch(() => { });
+      const chatKey = getUserStorageKey('research_chat_sessions');
+      localStorage.removeItem(chatKey);
+      axios.delete(`${API_URL}/chat`, getAuthHeaders()).catch(() => { });
     }
   };
 
@@ -468,6 +594,7 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
         user,
         setUser,
         updateUserName,
+        updateUserProfile,
         logout,
         papers,
         addPaper,

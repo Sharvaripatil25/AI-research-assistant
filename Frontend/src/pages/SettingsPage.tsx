@@ -5,14 +5,14 @@ import { User, Mail, Building, BrainCircuit, Key, Database, LogOut, Check, Spark
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const { user, updateUserName, logout, papers, clearAllPapers } = useResearch();
+  const { user, updateUserProfile, logout, papers, clearAllPapers } = useResearch();
   
-  const [name, setName] = useState(user?.name || 'Sharvari Patil');
-  const [institution, setInstitution] = useState(() => localStorage.getItem('pref_institution') || 'Stanford AI Lab / Academic Researcher');
-  const [researchField, setResearchField] = useState(() => localStorage.getItem('pref_field') || 'Computer Vision & Natural Language Processing');
-  const [aiModel, setAiModel] = useState(() => localStorage.getItem('pref_aimodel') || 'Gemini 1.5 Flash (Fast & Responsive)');
-  const [citationFormat, setCitationFormat] = useState(() => localStorage.getItem('pref_citation') || 'APA 7th Edition');
-  const [ragDepth, setRagDepth] = useState(() => localStorage.getItem('pref_ragdepth') || '5 Chunks (Balanced - Recommended)');
+  const [name, setName] = useState(user?.name || '');
+  const [institution, setInstitution] = useState(user?.institution || '');
+  const [researchField, setResearchField] = useState(user?.researchField || '');
+  const [aiModel, setAiModel] = useState(() => user?.email ? (localStorage.getItem(`pref_aimodel_${user.email.toLowerCase()}`) || 'Gemini 1.5 Flash (Fast & Responsive)') : 'Gemini 1.5 Flash (Fast & Responsive)');
+  const [citationFormat, setCitationFormat] = useState(() => user?.email ? (localStorage.getItem(`pref_citation_${user.email.toLowerCase()}`) || 'APA 7th Edition') : 'APA 7th Edition');
+  const [ragDepth, setRagDepth] = useState(() => user?.email ? (localStorage.getItem(`pref_ragdepth_${user.email.toLowerCase()}`) || '5 Chunks (Balanced - Recommended)') : '5 Chunks (Balanced - Recommended)');
   
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -20,30 +20,39 @@ const SettingsPage = () => {
   const [passMessage, setPassMessage] = useState('');
   const [cacheMessage, setCacheMessage] = useState('');
 
+  // Sync state dynamically whenever logged-in user changes
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setInstitution(user.institution || '');
+      setResearchField(user.researchField || '');
+      if (user.email) {
+        const emailKey = user.email.toLowerCase();
+        setAiModel(localStorage.getItem(`pref_aimodel_${emailKey}`) || 'Gemini 1.5 Flash (Fast & Responsive)');
+        setCitationFormat(localStorage.getItem(`pref_citation_${emailKey}`) || 'APA 7th Edition');
+        setRagDepth(localStorage.getItem(`pref_ragdepth_${emailKey}`) || '5 Chunks (Balanced - Recommended)');
+      }
+    }
+  }, [user]);
+
   // Dynamically calculate actual workspace storage used from uploaded papers
   const totalStorageMB = papers.reduce((acc, p) => acc + (Number(p.pages) || 12) * 0.18 + 0.4, 0).toFixed(1);
   const maxStorageMB = 500;
   const storagePercentage = Math.min(100, Math.max(1, (Number(totalStorageMB) / maxStorageMB) * 100)).toFixed(1);
 
-  // Sync state if user context updates
-  useEffect(() => {
-    if (user?.name) setName(user.name);
-  }, [user]);
-
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim()) {
-      updateUserName(name);
-      localStorage.setItem('pref_institution', institution);
-      localStorage.setItem('pref_field', researchField);
-      setMessage('Profile & preferences saved successfully!');
-      setTimeout(() => setMessage(''), 3000);
-    }
+  const handleSaveProfile = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanName = name.trim() || (user?.email ? user.email.split('@')[0] : 'Researcher');
+    updateUserProfile({ name: cleanName, institution: institution.trim(), researchField: researchField.trim() });
+    setMessage('Profile & preferences saved successfully!');
+    setTimeout(() => setMessage(''), 6000);
   };
 
-  const handleModelPrefChange = (val: string, key: string, setter: (v: string) => void) => {
+  const handleModelPrefChange = (val: string, keyPrefix: string, setter: (v: string) => void) => {
     setter(val);
-    localStorage.setItem(key, val);
+    if (user?.email) {
+      localStorage.setItem(`${keyPrefix}_${user.email.toLowerCase()}`, val);
+    }
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -98,14 +107,14 @@ const SettingsPage = () => {
           {/* Header Chip */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.25rem' }}>
             <div className="avatar" style={{ width: '52px', height: '52px', fontSize: '1.2rem', fontWeight: 800 }}>
-              {user?.avatarInitials || 'AS'}
+              {user?.avatarInitials || (user?.name ? user.name.slice(0, 2).toUpperCase() : 'U')}
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                {name}
+                {name || user?.name || 'Researcher'}
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                {user?.email || 'sharvaripatil333@gmail.com'}
+                {user?.email || ''}
               </div>
             </div>
             <span className="pill-tag pill-purple" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.75rem' }}>
@@ -142,7 +151,7 @@ const SettingsPage = () => {
                   type="email"
                   className="search-bar"
                   style={{ width: '100%', padding: '0.65rem 0.85rem', opacity: 0.75 }}
-                  value={user?.email || 'sharvaripatil333@gmail.com'}
+                  value={user?.email || ''}
                   disabled
                 />
               </div>
@@ -178,15 +187,40 @@ const SettingsPage = () => {
               </div>
             </div>
 
-            {message && (
-              <div style={{ color: 'var(--accent-emerald)', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Check size={16} /> {message}
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="submit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSaveProfile();
+                }}
+                className="primary-button"
+                style={{ padding: '0.65rem 1.4rem', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 10 }}
+              >
+                Save Profile Changes
+              </button>
 
-            <button type="submit" className="primary-button" style={{ marginTop: '0.25rem', padding: '0.65rem 1.25rem', alignSelf: 'flex-start' }}>
-              Save Profile Changes
-            </button>
+              {message && (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    padding: '0.45rem 0.9rem',
+                    borderRadius: '8px',
+                    background: 'rgba(52, 211, 153, 0.12)',
+                    border: '1px solid rgba(52, 211, 153, 0.35)',
+                    color: 'var(--accent-emerald)',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    boxShadow: '0 2px 8px rgba(52, 211, 153, 0.12)'
+                  }}
+                >
+                  <Check size={15} color="var(--accent-emerald)" />
+                  <span>{message}</span>
+                </div>
+              )}
+            </div>
           </form>
         </div>
 
