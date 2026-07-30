@@ -13,10 +13,14 @@ interface SavedReview {
 }
 
 const LiteratureReviewPage = () => {
-  const { papers } = useResearch();
+  const { papers, user } = useResearch();
+  const storageKey = user?.email ? `saved_literature_reviews_${user.email.toLowerCase().trim()}` : 'saved_literature_reviews_guest';
+
   const [topic, setTopic] = useState(() => {
-    if (papers.length > 0) return papers[0].title;
-    return 'Autonomous Robotics & Healthcare IoT Systems';
+    if (papers.length > 0) {
+      return `Synthesis of ${papers.length} Workspace Research Papers`;
+    }
+    return 'Autonomous Robotics & Healthcare Systems Overview';
   });
   const [selectedIds, setSelectedIds] = useState<string[]>(papers.map(p => p.id));
   const [reviewType, setReviewType] = useState('Comprehensive');
@@ -25,9 +29,9 @@ const LiteratureReviewPage = () => {
   const [generatedReview, setGeneratedReview] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
 
-  // Saved reviews state persisted in localStorage
+  // Saved reviews state persisted in user-scoped localStorage
   const [savedReviews, setSavedReviews] = useState<SavedReview[]>(() => {
-    const saved = localStorage.getItem('saved_literature_reviews');
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       try { return JSON.parse(saved); } catch { }
     }
@@ -35,8 +39,18 @@ const LiteratureReviewPage = () => {
   });
 
   useEffect(() => {
-    localStorage.setItem('saved_literature_reviews', JSON.stringify(savedReviews));
-  }, [savedReviews]);
+    setSavedReviews(() => {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try { return JSON.parse(saved); } catch { }
+      }
+      return [];
+    });
+  }, [storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(savedReviews));
+  }, [savedReviews, storageKey]);
 
   const togglePaperSelect = (id: string) => {
     setSelectedIds(prev =>
@@ -121,7 +135,7 @@ const LiteratureReviewPage = () => {
 
           setGeneratedReview(reviewText);
 
-          // Automatically save generated review to localStorage history so it's never lost on logout!
+          // Save generated review to history without duplicates
           const newSaved: SavedReview = {
             id: Date.now().toString(),
             topic,
@@ -130,7 +144,12 @@ const LiteratureReviewPage = () => {
             content: reviewText,
             papersCount: selectedPapersList.length
           };
-          setSavedReviews(prev => [newSaved, ...prev]);
+
+          setSavedReviews(prev => {
+            const isDuplicate = prev.some(r => r.topic === topic && r.content === reviewText);
+            if (isDuplicate) return prev;
+            return [newSaved, ...prev];
+          });
           setIsSaved(true);
 
           return 5;
@@ -142,8 +161,9 @@ const LiteratureReviewPage = () => {
 
   const handleSaveToLibrary = () => {
     if (!generatedReview) return;
-    const exists = savedReviews.some(r => r.content === generatedReview);
-    if (!exists) {
+    setSavedReviews(prev => {
+      const exists = prev.some(r => r.content === generatedReview);
+      if (exists) return prev;
       const newSaved: SavedReview = {
         id: Date.now().toString(),
         topic,
@@ -152,8 +172,8 @@ const LiteratureReviewPage = () => {
         content: generatedReview,
         papersCount: selectedIds.length
       };
-      setSavedReviews(prev => [newSaved, ...prev]);
-    }
+      return [newSaved, ...prev];
+    });
     setIsSaved(true);
   };
 
@@ -498,6 +518,9 @@ const LiteratureReviewPage = () => {
                   border: '1px solid rgba(255,255,255,0.08)',
                   maxHeight: '62vh',
                   overflowY: 'auto',
+                  overflowX: 'auto',
+                  maxWidth: '100%',
+                  minWidth: 0,
                   boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.2)'
                 }}
               >

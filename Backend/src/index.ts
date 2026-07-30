@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { registerUser, loginUser, authMiddleware } from './auth';
 import { initializeDatabase, getAllPapers, getPaperById, addPaper, deletePaperById, clearAllPapersFromDb, getChatHistory, addChatMessage, deleteChatMessageById, deleteChatSession, clearAllChatHistory } from './db';
-import { retrieveRelevantPapers, generateRAGResponse } from './rag';
+import { retrieveRelevantPapers, generateRAGResponse, extractPaperMetadataWithAI } from './rag';
 
 dotenv.config();
 
@@ -161,6 +161,16 @@ app.delete('/api/papers/:id', async (req: Request, res: Response) => {
   const userEmail = getUserEmailFromReq(req);
   await deletePaperById(paperId, userEmail);
   res.json({ message: 'Paper deleted successfully' });
+});
+
+app.post('/api/extract-metadata', async (req: Request, res: Response) => {
+  const { title, text } = req.body;
+  if (!title) {
+    res.status(400).json({ message: 'Title is required for metadata extraction' });
+    return;
+  }
+  const metadata = await extractPaperMetadataWithAI(title, text);
+  res.json({ metadata });
 });
 
 /* AI Chat API */

@@ -35,14 +35,26 @@ const PaperDetailPage = () => {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="secondary-button" onClick={() => alert(`Opening PDF document for ${paper.title}...`)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div className="detail-action-buttons">
+            <button
+              className="secondary-button"
+              style={{ borderRadius: 'var(--radius-md)', padding: '0.55rem 1.1rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', height: '38px' }}
+              onClick={() => alert(`Opening PDF document for ${paper.title}...`)}
+            >
               <FileText size={15} /> Open PDF
             </button>
-            <button className="primary-button" onClick={() => navigate('/chat')} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <button
+              className="primary-button"
+              style={{ borderRadius: 'var(--radius-md)', padding: '0.55rem 1.1rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', height: '38px' }}
+              onClick={() => navigate('/chat')}
+            >
               <Sparkles size={15} /> Ask AI about this paper
             </button>
-            <button className="secondary-button" style={{ color: '#f87171', display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={() => { deletePaper(paper.id); navigate('/library'); }}>
+            <button
+              className="secondary-button"
+              style={{ borderRadius: 'var(--radius-md)', padding: '0.55rem 1.1rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', height: '38px', color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.3)' }}
+              onClick={() => { deletePaper(paper.id); navigate('/library'); }}
+            >
               <Trash2 size={15} /> Delete
             </button>
           </div>

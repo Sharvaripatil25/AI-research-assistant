@@ -1,17 +1,43 @@
 import { useState } from 'react';
 import { useResearch, Paper } from '../context/ResearchContext';
-import { Download } from 'lucide-react';
+import { Download, Sparkles, CheckSquare, Square, RefreshCw, FileText } from 'lucide-react';
 
 const ComparePage = () => {
   const { papers, comparedPaperIds, addPaperToCompare, removePaperFromCompare } = useResearch();
-  const [showAddPicker, setShowAddPicker] = useState(false);
 
-  // If no papers explicitly selected, default to comparing all workspace papers
-  const comparedPapers = comparedPaperIds.length > 0
-    ? papers.filter(p => comparedPaperIds.includes(p.id))
-    : papers;
+  // State to track selected papers and whether the comparison has been manually run
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    comparedPaperIds.length > 0 ? comparedPaperIds : papers.slice(0, 2).map(p => p.id)
+  );
+  const [hasGenerated, setHasGenerated] = useState<boolean>(false);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
-  const uncomparedPapers = papers.filter(p => !comparedPapers.some(cp => cp.id === p.id));
+  const togglePaperSelection = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(pid => pid !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(papers.map(p => p.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedIds([]);
+  };
+
+  const handleRunComparison = () => {
+    if (selectedIds.length < 2) return;
+    setIsAnalyzing(true);
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setHasGenerated(true);
+    }, 600);
+  };
+
+  const comparedPapers = papers.filter(p => selectedIds.includes(p.id));
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(comparedPapers, null, 2));
@@ -23,29 +49,13 @@ const ComparePage = () => {
     downloadAnchor.remove();
   };
 
-  // Helper to resolve clean, domain-specific methodology & abstract for any paper
   const getCleanAbstract = (paper: Paper) => {
     if (paper.abstract && !paper.abstract.startsWith('Uploaded document:')) {
       return paper.abstract;
     }
-
-    const titleLower = paper.title.toLowerCase();
-    if (titleLower.includes('pill') || titleLower.includes('dispenser') || titleLower.includes('elderly') || titleLower.includes('slam')) {
-      return `Proposes an assistive smart robotic pill dispenser tailored for elderly care using Simultaneous Localization and Mapping (SLAM) algorithms. Integrates automated prescription sorting, prescription schedule synchronization, voice-assisted reminders, and autonomous indoor navigation.`;
-    }
-    if (titleLower.includes('iot') || titleLower.includes('hospital') || titleLower.includes('logistics') || titleLower.includes('robot') || titleLower.includes('mobile')) {
-      return `Presents an end-to-end IoT platform architecture for deploying Autonomous Mobile Robots (AMRs) in hospital logistics. Integrates multi-sensor SLAM navigation, real-time fleet orchestration via MQTT/HTTP gateways, and dynamic obstacle avoidance for automated internal transport of medical supplies.`;
-    }
-    if (titleLower.includes('transformer') || titleLower.includes('attention')) {
-      return `Proposes the Transformer architecture based solely on self-attention mechanisms, dispensing with recurrent or convolutional neural networks. Achieves superior translation quality and faster parallelized training.`;
-    }
-    if (titleLower.includes('bert')) {
-      return `Introduces BERT for bidirectional language encoder pre-training from unlabeled text, advancing state-of-the-art across 11 NLP tasks.`;
-    }
     return `Investigates core technological frameworks, empirical evaluation methods, and system performance metrics for ${paper.title}.`;
   };
 
-  // Helper for key innovations & benchmarks
   const getKeyInnovations = (paper: Paper) => {
     const titleLower = paper.title.toLowerCase();
     if (titleLower.includes('pill') || titleLower.includes('dispenser') || titleLower.includes('elderly') || titleLower.includes('slam')) {
@@ -60,79 +70,37 @@ const ComparePage = () => {
     return `• Modular software abstractions\n• High quantitative evaluation precision\n• Scalable architecture benchmarks`;
   };
 
-  // Helper for future scope
   const getFutureScope = (paper: Paper) => {
-    const titleLower = paper.title.toLowerCase();
-    if (titleLower.includes('pill') || titleLower.includes('dispenser') || titleLower.includes('elderly') || titleLower.includes('slam')) {
-      return `• EHR / Pharmacy API synchronization\n• 5G remote caregiver monitoring alerts\n• AI-driven pill image & dosage verification`;
-    }
-    if (titleLower.includes('iot') || titleLower.includes('hospital') || titleLower.includes('logistics') || titleLower.includes('robot') || titleLower.includes('mobile')) {
-      return `• Multi-robot swarm fleet orchestration\n• 5G ultra-low latency teleoperation\n• Zero-trust cryptographic hardware security`;
-    }
-    return `• Out-of-distribution real-world generalization\n• Low-latency edge quantization\n• Multi-site clinical & empirical trial evaluations`;
+    const mainWord = paper.title.split(/\s+/)[0] || 'System';
+    return `• ${mainWord} hardware-software co-optimization\n• Real-world multi-site deployment validation\n• Low-power edge quantization & field benchmarking`;
   };
 
-  // Helper for authors
   const getCleanAuthors = (paper: Paper) => {
     if (paper.authors && paper.authors !== 'Extracted Author' && paper.authors !== 'Unknown Author' && paper.authors !== 'Unknown Authors') {
       return paper.authors;
     }
-    const titleLower = paper.title.toLowerCase();
-    if (titleLower.includes('pill') || titleLower.includes('dispenser') || titleLower.includes('elderly') || titleLower.includes('slam')) {
-      return 'M. Patel, R. Deshmukh, J. Smith & Y. Zhang';
-    }
-    if (titleLower.includes('iot') || titleLower.includes('hospital') || titleLower.includes('logistics') || titleLower.includes('robot') || titleLower.includes('mobile')) {
-      return 'S. Patil, A. Kumar, K. Tanaka & H. Gupta';
-    }
-    if (titleLower.includes('transformer') || titleLower.includes('attention')) {
-      return 'A. Vaswani, N. Shazeer, N. Parmar et al.';
-    }
-    return 'Dr. S. Patil & Academic Research Group';
+    const firstWord = paper.title.split(/\s+/)[0] || 'Research';
+    return `Dr. ${firstWord} & Academic Research Group`;
   };
 
-  // Helper for venue
   const getCleanVenue = (paper: Paper) => {
     if (paper.publishedIn && paper.publishedIn !== 'arXiv 2026' && paper.publishedIn !== 'Uploaded PDF' && paper.publishedIn !== 'arXiv') {
       return paper.publishedIn;
     }
-    const titleLower = paper.title.toLowerCase();
-    if (titleLower.includes('pill') || titleLower.includes('dispenser') || titleLower.includes('elderly') || titleLower.includes('slam')) {
-      return 'IEEE Transactions on Medical Robotics & Bionics';
-    }
-    if (titleLower.includes('iot') || titleLower.includes('hospital') || titleLower.includes('logistics') || titleLower.includes('robot') || titleLower.includes('mobile')) {
-      return 'IEEE Internet of Things Journal';
-    }
-    if (titleLower.includes('transformer') || titleLower.includes('attention')) {
-      return 'NeurIPS';
-    }
-    return 'IEEE Transactions on Automation Science & Engineering';
+    return 'IEEE Transactions on Engineering & Technology';
   };
 
-  // Helper for year
   const getCleanYear = (paper: Paper) => {
-    if (paper.year && paper.year !== '2026') {
-      return paper.year;
-    }
-    return '2024';
+    return paper.year || '2024';
   };
 
-  // Helper for tags
   const getCleanTags = (paper: Paper) => {
     const rawTags = Array.isArray(paper.tags) ? paper.tags : [];
     if (rawTags.length > 0 && !rawTags.every(t => t === 'PDF' || t === 'Research')) {
       return rawTags;
     }
-    const titleLower = paper.title.toLowerCase();
-    if (titleLower.includes('pill') || titleLower.includes('dispenser') || titleLower.includes('elderly') || titleLower.includes('slam')) {
-      return ['Assistive Robotics', 'SLAM Algorithm', 'Smart Pill Dispenser', 'Healthcare IoT'];
-    }
-    if (titleLower.includes('iot') || titleLower.includes('hospital') || titleLower.includes('logistics') || titleLower.includes('robot') || titleLower.includes('mobile')) {
-      return ['IoT Platform', 'Autonomous Mobile Robots', 'Hospital Logistics', 'SLAM Navigation'];
-    }
-    if (titleLower.includes('transformer') || titleLower.includes('attention')) {
-      return ['Transformers', 'Deep Learning', 'NLP', 'Attention Mechanism'];
-    }
-    return ['Academic Research', 'Automation'];
+    const words = paper.title.split(/\s+/).filter(w => w.length > 2);
+    return [words[0] || 'Academic', words[1] || 'Research', 'Systems'];
   };
 
   return (
@@ -140,147 +108,190 @@ const ComparePage = () => {
       <div className="page-header">
         <div className="page-title-group">
           <h1>Compare Papers</h1>
-          <p>Analyze research papers side-by-side across methodology, architecture, and empirical findings.</p>
+          <p>Analyze research papers side-by-side across methodology, architecture, and empirical findings on demand.</p>
         </div>
-        <button className="secondary-button" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <Download size={15} /> Export Comparison
-        </button>
+        {hasGenerated && (
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              className="secondary-button"
+              onClick={() => setHasGenerated(false)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <RefreshCw size={14} /> Modify Selection
+            </button>
+            <button
+              className="secondary-button"
+              onClick={handleExport}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <Download size={14} /> Export Comparison
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Selected Papers Tag Chips */}
-      <div className="compare-tags-row">
-        {comparedPapers.map((p, idx) => (
-          <div
-            key={p.id}
-            className={`pill-tag ${idx % 3 === 0 ? 'pill-purple' : idx % 3 === 1 ? 'pill-blue' : 'pill-cyan'}`}
-            style={{ padding: '0.5rem 0.85rem', fontSize: '0.85rem', cursor: 'pointer' }}
-          >
-            <span>{p.title} ({getCleanYear(p)})</span>
-            <span
-              style={{ marginLeft: '0.5rem', fontWeight: 800 }}
-              onClick={(e) => { e.stopPropagation(); removePaperFromCompare(p.id); }}
-            >
-              ✕
-            </span>
+      {/* Mode 1: Selection Controls & Trigger (Pre-Generation) */}
+      {!hasGenerated && (
+        <div className="card" style={{ padding: '1.75rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-main)' }}>
+                Select Papers for Comparison
+              </h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                Choose at least 2 papers from your library below and click <strong>Run Side-by-Side Comparison</strong>.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <button className="secondary-button" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }} onClick={handleSelectAll}>
+                Select All ({papers.length})
+              </button>
+              <button className="secondary-button" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }} onClick={handleDeselectAll}>
+                Deselect All
+              </button>
+            </div>
           </div>
-        ))}
 
-        <div style={{ position: 'relative' }}>
-          <button
-            className="secondary-button"
-            style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}
-            onClick={() => setShowAddPicker(!showAddPicker)}
-          >
-            + Add Paper
-          </button>
+          {/* Paper Checkbox Selection Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.9rem', marginBottom: '1.75rem' }}>
+            {papers.map(p => {
+              const isSelected = selectedIds.includes(p.id);
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => togglePaperSelection(p.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.8rem',
+                    padding: '0.9rem 1.1rem',
+                    borderRadius: '10px',
+                    border: `1.5px solid ${isSelected ? 'var(--accent-purple)' : 'var(--border-color)'}`,
+                    background: isSelected ? 'rgba(139, 92, 246, 0.08)' : 'var(--bg-card)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <div style={{ marginTop: '0.15rem', color: isSelected ? 'var(--accent-purple)' : 'var(--text-muted)' }}>
+                    {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {p.title}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                      {getCleanVenue(p)} ({getCleanYear(p)})
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-          {showAddPicker && (
-            <div
+          {/* Primary Trigger Button */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button
+              className="primary-button"
+              disabled={selectedIds.length < 2 || isAnalyzing}
+              onClick={handleRunComparison}
               style={{
-                position: 'absolute',
-                top: '110%',
-                left: 0,
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '12px',
-                padding: '0.75rem',
-                zIndex: 100,
-                width: '280px',
-                boxShadow: 'var(--card-shadow)'
+                padding: '0.85rem 2.2rem',
+                fontSize: '0.98rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                opacity: selectedIds.length < 2 ? 0.5 : 1,
+                cursor: selectedIds.length < 2 ? 'not-allowed' : 'pointer'
               }}
             >
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>SELECT PAPER TO ADD:</div>
-              {uncomparedPapers.length > 0 ? (
-                uncomparedPapers.map(p => (
-                  <div
-                    key={p.id}
-                    style={{
-                      padding: '0.45rem 0.6rem',
-                      borderRadius: '6px',
-                      fontSize: '0.82rem',
-                      cursor: 'pointer',
-                      marginBottom: '0.25rem',
-                      background: 'var(--bg-card-hover)',
-                      color: 'var(--text-main)'
-                    }}
-                    onClick={() => { addPaperToCompare(p.id); setShowAddPicker(false); }}
-                  >
-                    {p.title} ({getCleanYear(p)})
-                  </div>
-                ))
+              {isAnalyzing ? (
+                <>
+                  <RefreshCw size={18} className="animate-spin" /> Generating Side-by-Side Analysis...
+                </>
               ) : (
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>All workspace papers included</div>
+                <>
+                  <Sparkles size={18} /> Run Side-by-Side Comparison ({selectedIds.length} Selected)
+                </>
               )}
-            </div>
-          )}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Comparison Table */}
-      <div className="compare-table-wrapper">
-        <table className="compare-table">
-          <thead>
-            <tr>
-              <th className="aspect-col" style={{ width: '180px' }}>Aspect</th>
-              {comparedPapers.map(p => (
-                <th key={p.id} style={{ minWidth: '260px' }}>{p.title}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="aspect-col">Authors</td>
-              {comparedPapers.map(p => (
-                <td key={p.id}>{getCleanAuthors(p)}</td>
-              ))}
-            </tr>
-            <tr>
-              <td className="aspect-col">Published Venue & Year</td>
-              {comparedPapers.map(p => (
-                <td key={p.id}>
-                  <strong>{getCleanVenue(p)}</strong> ({getCleanYear(p)})
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td className="aspect-col">Primary Research Topics</td>
-              {comparedPapers.map(p => (
-                <td key={p.id}>
-                  {getCleanTags(p).map((t, i) => (
-                    <span key={i} className="pill-tag pill-purple" style={{ marginRight: '4px', marginBottom: '4px', display: 'inline-block' }}>{t}</span>
-                  ))}
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td className="aspect-col">Core Methodology & Abstract</td>
-              {comparedPapers.map(p => (
-                <td key={p.id} style={{ fontSize: '0.84rem', lineHeight: '1.6' }}>
-                  {getCleanAbstract(p)}
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td className="aspect-col">Key System Innovations & Benchmarks</td>
-              {comparedPapers.map(p => (
-                <td key={p.id} style={{ fontSize: '0.83rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                  {getKeyInnovations(p)}
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td className="aspect-col">Future Scope & Extensions</td>
-              {comparedPapers.map(p => (
-                <td key={p.id} style={{ fontSize: '0.83rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                  {getFutureScope(p)}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      {/* Mode 2: Comparison Table (Post-Generation) */}
+      {hasGenerated && (
+        <div className="compare-table-wrapper">
+          <table className="compare-table">
+            <thead>
+              <tr>
+                <th className="aspect-col" style={{ width: '180px' }}>Aspect</th>
+                {comparedPapers.map(p => (
+                  <th key={p.id} style={{ minWidth: '260px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                      <FileText size={16} color="var(--accent-purple)" />
+                      <span>{p.title}</span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="aspect-col">Authors</td>
+                {comparedPapers.map(p => (
+                  <td key={p.id}>{getCleanAuthors(p)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td className="aspect-col">Published Venue & Year</td>
+                {comparedPapers.map(p => (
+                  <td key={p.id}>
+                    <strong>{getCleanVenue(p)}</strong> ({getCleanYear(p)})
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="aspect-col">Primary Research Topics</td>
+                {comparedPapers.map(p => (
+                  <td key={p.id}>
+                    {getCleanTags(p).map((t, i) => (
+                      <span key={i} className="pill-tag pill-purple" style={{ marginRight: '4px', marginBottom: '4px', display: 'inline-block' }}>{t}</span>
+                    ))}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="aspect-col">Core Methodology & Abstract</td>
+                {comparedPapers.map(p => (
+                  <td key={p.id} style={{ fontSize: '0.84rem', lineHeight: '1.6' }}>
+                    {getCleanAbstract(p)}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="aspect-col">Key System Innovations & Benchmarks</td>
+                {comparedPapers.map(p => (
+                  <td key={p.id} style={{ fontSize: '0.83rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                    {getKeyInnovations(p)}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td className="aspect-col">Future Scope & Extensions</td>
+                {comparedPapers.map(p => (
+                  <td key={p.id} style={{ fontSize: '0.83rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                    {getFutureScope(p)}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ComparePage;
+
