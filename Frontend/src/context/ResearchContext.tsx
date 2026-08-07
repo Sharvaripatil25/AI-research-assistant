@@ -303,12 +303,30 @@ export const ResearchProvider = ({ children }: { children: ReactNode }) => {
     }
     setComparedPaperIds([]);
 
-    // Fetch backend papers for this user if logged in
+    // Fetch backend papers & chat history for this user if logged in
     if (user?.email) {
       axios.get(`${API_URL}/papers`, getAuthHeaders())
         .then(res => {
           if (res.data && Array.isArray(res.data.papers)) {
             setPapers(res.data.papers.map(sanitizePaper));
+          }
+        })
+        .catch(err => {
+          console.warn('Could not fetch papers from backend DB:', err);
+        });
+
+      axios.get(`${API_URL}/chat`, getAuthHeaders())
+        .then(res => {
+          if (res.data && Array.isArray(res.data.messages) && res.data.messages.length > 0) {
+            const backendMsgs: ChatMessage[] = res.data.messages;
+            const defaultSessionId = 'session-default';
+            setChatSessions([{
+              id: defaultSessionId,
+              title: 'Saved Research Chat',
+              createdAt: new Date().toLocaleDateString(),
+              messages: backendMsgs
+            }]);
+            setActiveSessionId(defaultSessionId);
           }
         })
         .catch(() => { });

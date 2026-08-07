@@ -1,5 +1,6 @@
-// Centralized API configuration for live deployment
-const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:5000';
+// Centralized API configuration for live deployment & local network devices
+const defaultHost = (typeof window !== 'undefined' && window.location?.hostname) ? window.location.hostname : 'localhost';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined) || `http://${defaultHost}:5000`;
 
 // Remove trailing slash if present
 const cleanUrl = rawApiUrl.replace(/\/+$/, '');
