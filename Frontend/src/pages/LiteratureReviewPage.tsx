@@ -388,7 +388,7 @@ const LiteratureReviewPage = () => {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justify: 'space-between',
+                      justifyContent: 'space-between',
                       padding: '0.5rem 0.65rem',
                       borderRadius: '8px',
                       background: generatedReview === r.content ? 'rgba(139, 92, 246, 0.18)' : 'rgba(255, 255, 255, 0.02)',

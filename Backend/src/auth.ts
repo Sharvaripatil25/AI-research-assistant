@@ -23,14 +23,16 @@ export const registerUser = async (email: string, password: string) => {
 };
 
 export const loginUser = async (email: string, password: string) => {
-  const user = await findUserByEmail(email);
+  let user = await findUserByEmail(email);
   if (!user) {
-    throw new Error('Invalid credentials');
-  }
-
-  const isValid = await bcrypt.compare(password, user.passwordHash);
-  if (!isValid) {
-    throw new Error('Invalid credentials');
+    // Automatically provision user in PostgreSQL on first login
+    const passwordHash = await bcrypt.hash(password, 10);
+    user = await createUser(email, passwordHash);
+  } else {
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
+      throw new Error('Invalid credentials');
+    }
   }
 
   const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });

@@ -1,13 +1,14 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { registerUser, loginUser, authMiddleware } from './auth';
 import { initializeDatabase, getAllPapers, getPaperById, addPaper, deletePaperById, clearAllPapersFromDb, getChatHistory, addChatMessage, deleteChatMessageById, deleteChatSession, clearAllChatHistory } from './db';
 import { retrieveRelevantPapers, generateRAGResponse, extractPaperMetadataWithAI } from './rag';
 
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
