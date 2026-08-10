@@ -82,7 +82,7 @@ const query = async <T = any>(
     return res.rows as T[];
   } else if (sqliteDb) {
     return new Promise((resolve, reject) => {
-      sqliteDb!.all(sqliteSql, params, (err, rows) => {
+      sqliteDb!.all(sqliteSql, params, (err: any, rows: any) => {
         if (err) reject(err);
         else resolve(rows as T[]);
       });
@@ -102,9 +102,9 @@ const execute = async (
     return { lastID, rowCount: res.rowCount ?? 0 };
   } else if (sqliteDb) {
     return new Promise((resolve, reject) => {
-      sqliteDb!.run(sqliteSql, params, function (err) {
+      sqliteDb!.run(sqliteSql, params, function (this: any, err: any) {
         if (err) reject(err);
-        else resolve({ lastID: this.lastID, rowCount: this.changes });
+        else resolve({ lastID: this?.lastID, rowCount: this?.changes });
       });
     });
   }
