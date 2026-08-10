@@ -1755,6 +1755,25 @@ html, body, #root {
   }
 }
 
+/* Auth Page Grid */
+.auth-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 520px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .auth-card-grid {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+
+  .auth-brand-panel {
+    display: none !important;
+  }
+}
+
 /* Small Smartphone Displays (480px and below) */
 @media (max-width: 640px) {
   .landing-header {
@@ -1767,12 +1786,6 @@ html, body, #root {
 
   .desktop-only-nav {
     display: none !important;
-  }
-
-  .auth-brand-panel {
-    border-right: none !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    padding: 1.25rem 1rem !important;
   }
 }
 

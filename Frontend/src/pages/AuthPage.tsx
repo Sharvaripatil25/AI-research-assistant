@@ -98,7 +98,7 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
           background: 'var(--bg-card)'
         }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', minHeight: 'auto' }}>
+        <div className="auth-card-grid">
           {/* Left Brand Panel */}
           <div
             className="auth-brand-panel"
