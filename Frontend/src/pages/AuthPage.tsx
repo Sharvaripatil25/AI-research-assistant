@@ -98,44 +98,46 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
           background: 'var(--bg-card)'
         }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '520px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', minHeight: 'auto' }}>
           {/* Left Brand Panel */}
           <div
+            className="auth-brand-panel"
             style={{
-              padding: '2.5rem',
+              padding: '2rem 1.5rem',
               background: 'var(--bg-card-hover)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              borderRight: '1px solid var(--border-color)'
+              borderRight: '1px solid var(--border-color)',
+              boxSizing: 'border-box'
             }}
           >
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div className="brand-mark">
                   <BookOpen size={20} />
                 </div>
-                <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
                   AI Research Assistant
                 </span>
               </div>
 
-              <h1 style={{ fontSize: '1.9rem', fontWeight: 800, lineHeight: 1.25, marginBottom: '1rem', color: 'var(--text-main)' }}>
+              <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.9rem)', fontWeight: 800, lineHeight: 1.25, marginBottom: '1rem', color: 'var(--text-main)' }}>
                 Research faster with an intelligent workspace.
               </h1>
 
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
                 Upload papers, summarize findings, ask inline cited questions, compare benchmarks, and synthesize literature reviews.
               </p>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <span className="pill-tag pill-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                <span className="pill-tag pill-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
                   <FileText size={13} /> PDF RAG Analysis
                 </span>
-                <span className="pill-tag pill-blue" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem' }}>
+                <span className="pill-tag pill-blue" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
                   <Scale size={13} /> Matrix Comparison
                 </span>
-                <span className="pill-tag pill-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.75rem' }}>
+                <span className="pill-tag pill-purple" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
                   <Sparkles size={13} /> Auto Literature Reviews
                 </span>
               </div>
@@ -145,14 +147,14 @@ const AuthPage = ({ theme, toggleTheme }: AuthPageProps) => {
               className="secondary-button"
               type="button"
               onClick={toggleTheme}
-              style={{ width: 'fit-content', padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
+              style={{ width: 'fit-content', padding: '0.5rem 0.95rem', fontSize: '0.82rem' }}
             >
-              {theme === 'dark' ? <><Sun size={15} /> Light Mode</> : <><Moon size={15} /> Dark Mode</>}
+              {theme === 'dark' ? <><Sun size={14} /> Light Mode</> : <><Moon size={14} /> Dark Mode</>}
             </button>
           </div>
 
           {/* Right Form Panel */}
-          <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--bg-card)' }}>
+          <div style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--bg-card)', boxSizing: 'border-box' }}>
             <div style={{ marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.35rem', color: 'var(--text-main)' }}>
                 {isLogin ? 'Welcome back' : 'Create your account'}
