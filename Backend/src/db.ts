@@ -4,9 +4,7 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 import { Pool } from 'pg';
-import sqlite3 from 'sqlite3';
 import fs from 'fs';
-
 
 export interface PaperRecord {
   id: string;
@@ -46,7 +44,7 @@ const isPostgres = Boolean(
 );
 
 let pgPool: Pool | null = null;
-let sqliteDb: sqlite3.Database | null = null;
+let sqliteDb: any = null;
 
 if (isPostgres) {
   const isCloud =
@@ -67,7 +65,8 @@ if (isPostgres) {
   const dbPath = path.join(dbDirectory, 'app.db');
   fs.mkdirSync(dbDirectory, { recursive: true });
 
-  const sqlite = sqlite3.verbose();
+  // Dynamically require sqlite3 only when running in SQLite mode
+  const sqlite = require('sqlite3').verbose();
   sqliteDb = new sqlite.Database(dbPath);
   console.log('📦 Database Mode: SQLite (Set DATABASE_URL in .env to use PostgreSQL)');
 }
