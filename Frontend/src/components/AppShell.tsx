@@ -22,7 +22,8 @@ import {
   Trash2,
   X,
   CheckCircle2,
-  Info
+  Info,
+  Menu
 } from 'lucide-react';
 
 type AppShellProps = {
@@ -57,7 +58,11 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
   const navigate = useNavigate();
   const { user, logout, searchQuery, setSearchQuery, papers, chatSessions } = useResearch();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  // ... rest of component logic ...
+
 
   const userEmail = user?.email ? user.email.toLowerCase().trim() : 'guest';
 
@@ -214,8 +219,20 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <NavLink to="/dashboard" className="sidebar-brand" style={{ textDecoration: 'none' }}>
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside className={`sidebar${isMobileMenuOpen ? ' mobile-open' : ''}`}>
+        <NavLink
+          to="/dashboard"
+          className="sidebar-brand"
+          style={{ textDecoration: 'none' }}
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
           <div className="brand-mark">
             <BookOpen size={20} />
           </div>
@@ -234,6 +251,7 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
                 key={item.label}
                 to={item.path}
                 className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 <span className="nav-icon"><Icon size={18} /></span>
                 <span>{item.label}</span>
@@ -253,6 +271,7 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
                   key={item.label}
                   to={item.path}
                   className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <span className="nav-icon"><Icon size={18} /></span>
                   <span>{item.label}</span>
@@ -265,6 +284,15 @@ const AppShell = ({ children, theme, toggleTheme }: AppShellProps) => {
 
       <main className="content-area">
         <header className="topbar">
+          <button
+            className="mobile-hamburger-btn icon-btn"
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            title="Toggle Navigation Menu"
+          >
+            <Menu size={18} />
+          </button>
+
           <div style={{ flex: 1 }} />
 
           <div className="topbar-right">
